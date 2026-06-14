@@ -2,6 +2,8 @@
 *.class
 *.log
 *.pyc
+*.pyo
+*.pyd
 *.swp
 .DS_Store
 .atom/
@@ -10,6 +12,10 @@
 .svn/
 migrate_working_dir/
 winter-command-center.zip
+**/.venv/
+**/venv/
+**/__pycache__/
+.vscode/
 
 # IntelliJ related
 *.iml

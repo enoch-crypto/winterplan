@@ -1,0 +1,79 @@
+{
+    "start_date": "2026-01-30",
+    "last_updated": "2026-01-30 22:17:55",
+    "tasks": [
+        {
+            "id": 1,
+            "name": "物理压轴大题",
+            "total": 6,
+            "done": 0,
+            "unit": "题",
+            "icon": "⚡",
+            "module": "理化攻坚",
+            "self_rating": 0
+        },
+        {
+            "id": 2,
+            "name": "化学二模卷",
+            "total": 1,
+            "done": 0,
+            "unit": "套",
+            "icon": "🧪",
+            "module": "理化攻坚",
+            "self_rating": 0
+        },
+        {
+            "id": 3,
+            "name": "数学几何思考题",
+            "total": 5,
+            "done": 0,
+            "unit": "题",
+            "icon": "📐",
+            "module": "数英综合",
+            "self_rating": 0
+        },
+        {
+            "id": 4,
+            "name": "英语D篇专练",
+            "total": 2,
+            "done": 0,
+            "unit": "篇",
+            "icon": "🔤",
+            "module": "数英综合",
+            "self_rating": 0
+        },
+        {
+            "id": 5,
+            "name": "历史道法笔记",
+            "total": 1,
+            "done": 0,
+            "unit": "项",
+            "icon": "📜",
+            "module": "文科/复盘",
+            "self_rating": 0
+        },
+        {
+            "id": 6,
+            "name": "语文默写",
+            "total": 1,
+            "done": 0,
+            "unit": "篇",
+            "icon": "📖",
+            "module": "文科/复盘",
+            "self_rating": 0
+        },
+        {
+            "id": 7,
+            "name": "App打卡",
+            "total": 1,
+            "done": 0,
+            "unit": "次",
+            "icon": "📱",
+            "module": "文科/复盘",
+            "self_rating": 0
+        }
+    ],
+    "history": [],
+    "time_logs": [],
+    "daily_scores": []
+}

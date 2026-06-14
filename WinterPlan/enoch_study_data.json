@@ -1,0 +1,51 @@
+{
+    "start_date": "2026-01-31",
+    "daily_logs": {},
+    "tasks": {
+        "物理 (压轴)": {
+            "total": 30,
+            "done": 0,
+            "unit": "题",
+            "icon": "⚡",
+            "target_min": 45
+        },
+        "化学 (二模)": {
+            "total": 15,
+            "done": 0,
+            "unit": "套",
+            "icon": "🧪",
+            "target_min": 60
+        },
+        "数学 (几何)": {
+            "total": 20,
+            "done": 0,
+            "unit": "题",
+            "icon": "📐",
+            "target_min": 60
+        },
+        "英语 (D篇)": {
+            "total": 15,
+            "done": 0,
+            "unit": "套",
+            "icon": "🔤",
+            "target_min": 40
+        },
+        "钢琴 (艺术)": {
+            "total": 25,
+            "done": 0,
+            "unit": "次",
+            "icon": "🎹",
+            "target_min": 45
+        },
+        "足球 (运动)": {
+            "total": 18,
+            "done": 0,
+            "unit": "次",
+            "icon": "⚽",
+            "target_min": 120
+        }
+    },
+    "daily_records": {
+        "2026-01-31": {}
+    }
+}

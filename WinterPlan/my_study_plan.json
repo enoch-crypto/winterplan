@@ -1,0 +1,147 @@
+{
+    "start_date": "2026-01-30",
+    "last_updated": "2026-01-30 21:08:38",
+    "study_tasks": {
+        "理化攻坚": [
+            {
+                "name": "物理压轴大题",
+                "total": 6,
+                "done": 0.12,
+                "unit": "题",
+                "icon": "⚡"
+            },
+            {
+                "name": "化学二模卷",
+                "total": 1,
+                "done": 0,
+                "unit": "套",
+                "icon": "🧪"
+            },
+            {
+                "name": "物理 (压轴/大题)",
+                "total": 30,
+                "done": 2.04,
+                "unit": "题",
+                "icon": "⚡"
+            },
+            {
+                "name": "物理 (空中课堂)",
+                "total": 19,
+                "done": 0.48,
+                "unit": "个",
+                "icon": "📺"
+            },
+            {
+                "name": "化学 (二模卷)",
+                "total": 15,
+                "done": 0.36,
+                "unit": "套",
+                "icon": "🧪"
+            },
+            {
+                "name": "化学 (指导册/梳理)",
+                "total": 50,
+                "done": 2.4,
+                "unit": "页",
+                "icon": "📘"
+            }
+        ],
+        "数英综合": [
+            {
+                "name": "数学几何思考题",
+                "total": 5,
+                "done": 0,
+                "unit": "题",
+                "icon": "📐"
+            },
+            {
+                "name": "英语D篇专练",
+                "total": 2,
+                "done": 0,
+                "unit": "篇",
+                "icon": "🔤"
+            },
+            {
+                "name": "数学 (几何/思考题)",
+                "total": 20,
+                "done": 0.8,
+                "unit": "题",
+                "icon": "📐"
+            },
+            {
+                "name": "数学 (指导册基础)",
+                "total": 22,
+                "done": 1.08,
+                "unit": "页",
+                "icon": "✏️"
+            },
+            {
+                "name": "英语 (二模卷/D篇)",
+                "total": 15,
+                "done": 0.36,
+                "unit": "套",
+                "icon": "🔤"
+            },
+            {
+                "name": "英语 (作文)",
+                "total": 5,
+                "done": 0.2,
+                "unit": "篇",
+                "icon": "📝"
+            }
+        ],
+        "文科/复盘": [
+            {
+                "name": "历史道法笔记",
+                "total": 1,
+                "done": 0,
+                "unit": "项",
+                "icon": "📜"
+            },
+            {
+                "name": "语文默写",
+                "total": 1,
+                "done": 0,
+                "unit": "篇",
+                "icon": "📖"
+            },
+            {
+                "name": "App打卡",
+                "total": 1,
+                "done": 0,
+                "unit": "次",
+                "icon": "📱"
+            },
+            {
+                "name": "历史/道法 (笔记作业)",
+                "total": 7,
+                "done": 0.27,
+                "unit": "项",
+                "icon": "📜"
+            }
+        ]
+    },
+    "custom_tasks": [
+        {
+            "name": "钢琴/阅读 (艺术留白)",
+            "total": 25,
+            "done": 0.9,
+            "unit": "次",
+            "icon": "🎹"
+        },
+        {
+            "name": "足球/运动",
+            "total": 18,
+            "done": 0.56,
+            "unit": "次",
+            "icon": "⚽"
+        },
+        {
+            "name": "看球",
+            "total": 20,
+            "done": 0,
+            "unit": "小时",
+            "icon": "🌍"
+        }
+    ]
+}

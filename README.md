@@ -6,6 +6,13 @@ WinterPlan 是一个面向寒假学习冲刺场景的 Flutter 手机应用。它
 
 ## 项目简介
 
+为了保留项目从原型到手机应用的完整演进，本仓库现在包含两个阶段的实现：
+
+- `WinterPlan/`：旧版 Python + Streamlit 网页原型。它用于快速验证寒假学习计划的数据结构、任务管理、动态目标计算、打卡记录和 JSON 本地存储，适合在电脑浏览器中运行和调试，但不能直接打包成 Android APK。
+- 仓库根目录：当前 Flutter 手机 App 版。`lib/`、`android/`、`pubspec.yaml` 等文件组成现在用于本地安装和 APK 打包的正式移动端实现，它继承了旧版原型的学习计划逻辑，并重新实现为离线可用的手机应用。
+
+因此，`WinterPlan/` 的作用是保留旧版网页原型和早期数据来源；真正执行 `flutter build apk` 的项目仍然是当前仓库根目录下的 Flutter 工程。
+
 寒假学习最容易遇到的问题不是“没有计划”，而是计划落地以后缺少一个低摩擦的执行系统：
 
 - 纸面计划难以及时知道现在该做哪一项。
@@ -158,7 +165,7 @@ WinterPlan 解决的是“寒假计划从静态清单到动态执行”的问题
 
 ### 数据从哪里来
 
-项目目前的数据来源分为两类。
+当前 Flutter App 运行时的数据来源主要分为两类，仓库中还保留了一组旧版原型数据作为项目演进说明。
 
 第一类是默认内置数据。首次启动时，如果本地没有存储过数据，App 会使用代码中预置的日程和作业清单。默认日程覆盖一天中学习、休息、运动、复盘和睡前整理的完整节奏。默认作业库覆盖物理、数学、英语、化学、文综/其他和体育六类任务。
 
@@ -169,6 +176,8 @@ WinterPlan 解决的是“寒假计划从静态清单到动态执行”的问题
 - `logs_v8`
 
 这意味着 App 默认是离线可用的，不依赖服务器，也不会把学习数据上传到云端。备份和迁移通过用户主动导出的 JSON 文件完成。
+
+此外，`WinterPlan/` 目录中保留了旧版 Streamlit 原型使用过的 JSON 数据，例如 `enoch_study_data.json`、`my_study_plan.json` 和 `my_study_plan_pro.json`。这些文件不是 Flutter App 启动时直接读取的数据源，而是用于展示早期网页版原型如何组织学习任务、进度和打卡记录。
 
 ### 程序如何实现
 
@@ -223,6 +232,13 @@ WinterPlan 解决的是“寒假计划从静态清单到动态执行”的问题
 
 ```text
 .
+├── WinterPlan/                    # 旧版 Python + Streamlit 网页原型
+│   ├── app.py                     # 旧版原型入口之一
+│   ├── winter_plan_app.py         # 早期 Streamlit 主应用
+│   ├── winter_plan_pro.py         # 增强版原型
+│   ├── requirements.txt           # 旧版 Python 依赖
+│   ├── *.json                     # 旧版计划数据和打卡数据
+│   └── backups/                   # 旧版数据备份样例
 ├── lib/
 │   └── main.dart                  # 主要应用逻辑、数据模型、状态管理和 UI 页面
 ├── android/                       # Android 工程与 Gradle 配置
@@ -285,6 +301,20 @@ flutter devices
 ```bash
 flutter run -d <device-id>
 ```
+
+### 运行旧版 Streamlit 原型
+
+旧版 `WinterPlan/` 是可选的网页原型，主要用于查看早期设计和数据结构，不参与 APK 打包。
+
+```bash
+cd WinterPlan
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+streamlit run app.py
+```
+
+如果在 Windows 环境运行，也可以参考 `WinterPlan/run_app_simple.bat` 或 `WinterPlan/start_app_high_port.py`。
 
 ## Android 打包
 
