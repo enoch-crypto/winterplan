@@ -32,6 +32,87 @@ WinterPlan 解决的是“寒假计划从静态清单到动态执行”的问题
 
 这个项目不是通用日历，也不是简单 Todo List。它更像一个面向中考寒假冲刺的个人学习作战台：默认计划围绕 2026 中考、2.2 到 2.27 寒假攻坚期、每日固定学习节奏和六类作业库展开，强调执行、反馈和复盘。
 
+## WinterPlan 目录源码说明
+
+`WinterPlan/` 是本项目的旧版 Python + Streamlit 网页原型源码目录。它的核心价值不是打包 APK，而是保留项目最早的功能验证过程：先用 Python 快速做出可运行的网页版学习计划工具，验证“任务清单、每日目标、打卡记录、进度统计、撤销恢复、JSON 存储”这些业务逻辑是否成立，再把已经验证过的思路迁移到 Flutter 手机 App 中。
+
+简单说，`WinterPlan/` 回答的是“这个学习计划系统最早是如何被设计和验证的”；仓库根目录的 Flutter 工程回答的是“这个系统如何变成可以安装到手机上的 App”。
+
+### 目录定位
+
+`WinterPlan/` 主要承担四个作用：
+
+- 原型验证：用 Streamlit 快速搭建网页界面，验证寒假学习计划是否适合用数据化方式管理。
+- 业务逻辑沉淀：保留每日目标计算、任务完成率、学习时长记录、自评分、撤销恢复和备份等早期实现。
+- 数据来源说明：保留旧版 JSON 数据文件，展示早期计划、任务和打卡数据的组织方式。
+- 项目演进证据：说明当前 Flutter App 不是凭空生成的界面，而是从一个可运行的 Python 网页原型迭代而来。
+
+这个目录不参与 Android 打包。执行 `flutter build apk` 时，Flutter 只会使用根目录下的 `lib/`、`android/`、`pubspec.yaml` 等 Flutter 工程文件。
+
+### 主要源码文件
+
+`WinterPlan/` 中有多个版本文件，这是因为旧版原型经历了从简单版到增强版、再到模块化 Pro 版的迭代。
+
+| 文件 | 作用 |
+| --- | --- |
+| `winter_plan_app.py` | 早期基础版 Streamlit 应用，包含默认任务、JSON 读写、每日目标计算和基础进度展示。 |
+| `winter_plan_enhanced.py` | 增强版原型，在基础版上加入更完整的数据结构、进度统计和重置能力。 |
+| `winter_plan_final.py` | 单文件整合版，保留较完整的任务配置、迁移逻辑、数据保存和界面展示。 |
+| `winter_plan_pro.py` | Pro 单文件版本，加入撤销/恢复、历史记录、自评分、备份和更丰富的可视化能力。 |
+| `winter_plan_pro_main.py` | Pro 模块化版本的主入口，负责组合数据逻辑和 UI 组件，是阅读旧版原型时最推荐的入口。 |
+| `data_logic.py` | Pro 模块化版本的数据和业务逻辑层，包含默认计划、时间表、JSON 加载保存、格式迁移、进度计算、历史记录、任务增删改和计时记录。 |
+| `ui_view.py` | Pro 模块化版本的 Streamlit 界面层，包含页面设置、侧边栏、撤销恢复、数据导出、任务管理、时间表和打卡视图。 |
+| `app.py` | 另一版 Streamlit 实验入口，使用 `enoch_study_data.json`，包含任务管理、Session State、撤销和评分逻辑。 |
+
+如果只是想了解旧版原型的核心设计，优先阅读这三个文件：
+
+```text
+WinterPlan/winter_plan_pro_main.py
+WinterPlan/data_logic.py
+WinterPlan/ui_view.py
+```
+
+### 启动脚本和测试文件
+
+旧版原型还保留了若干启动脚本，方便在不同环境下运行：
+
+| 文件 | 作用 |
+| --- | --- |
+| `start_app.py` | 检查依赖并启动早期 Streamlit 应用。 |
+| `start_app_high_port.py` | 使用较高端口启动，主要用于规避 Windows 端口权限问题。 |
+| `start_enhanced_app.py` | 启动增强版原型。 |
+| `start_final_app.py` | 启动 final 单文件版本。 |
+| `start_pro_app.py` | 启动 Pro 版本。 |
+| `run_app.bat` / `run_app_simple.bat` | Windows 下双击运行的批处理脚本。 |
+| `test_app.py` / `test_enhanced_app.py` | 旧版原型的轻量测试脚本，用来检查数据结构、计算函数、备份系统和运行环境。 |
+
+### JSON 数据文件
+
+`WinterPlan/` 中的 JSON 文件是旧版 Streamlit 原型的数据文件，不是当前 Flutter App 运行时直接读取的数据。
+
+| 文件 | 作用 |
+| --- | --- |
+| `my_study_plan.json` | 早期基础版/增强版使用的学习计划数据。 |
+| `my_study_plan_pro.json` | Pro 版本使用的数据文件，结构更接近完整任务管理系统。 |
+| `enoch_study_data.json` | `app.py` 实验入口使用的数据文件。 |
+| `backups/backup_20260130.json` | 旧版原型生成的数据备份样例。 |
+
+这些文件展示了早期数据如何从“任务总量、已完成量、单位、图标”逐步扩展到“任务模块、自评分、时间记录、历史记录和每日评分”。当前 Flutter App 没有直接复用这些 JSON 文件，而是把类似的数据结构重新实现到了 Dart 模型和 `SharedPreferences` 本地存储中。
+
+### 与 Flutter App 的关系
+
+旧版 Streamlit 原型和当前 Flutter App 的关系可以理解为：
+
+```text
+Python/Streamlit 原型
+  -> 验证学习计划、打卡、统计、备份这些业务逻辑
+  -> 沉淀默认任务、时间安排和 JSON 数据结构
+  -> 迁移为 Flutter/Dart 手机端实现
+  -> 通过 Android 工程打包为 APK
+```
+
+两者不是重复项目，而是同一个项目的两个阶段。`WinterPlan/` 更适合展示“需求探索和原型验证”；Flutter 工程更适合展示“移动端产品化和本地安装”。因此 README 中同时保留两者，可以让读者清楚看到项目从网页原型到手机 App 的完整过程。
+
 ## 项目功能点
 
 ### 1. 战况总览
