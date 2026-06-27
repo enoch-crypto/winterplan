@@ -3,147 +3,26 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'package:intl/intl.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:share_plus/share_plus.dart';
 import 'package:file_picker/file_picker.dart';
+import 'models/study_models.dart';
+import 'services/storage_service.dart';
 
 // ==========================================
 // 1. 数据模型 (Models)
 // ==========================================
-
-class ScheduleItem {
-  String id;
-  String timeRange;
-  String title;
-  String content;
-  String icon;
-  String tag;
-
-  ScheduleItem(
-      {required this.id,
-      required this.timeRange,
-      required this.title,
-      required this.content,
-      required this.icon,
-      required this.tag});
-
-  Map<String, dynamic> toJson() => {
-        'id': id,
-        'timeRange': timeRange,
-        'title': title,
-        'content': content,
-        'icon': icon,
-        'tag': tag
-      };
-
-  factory ScheduleItem.fromJson(Map<String, dynamic> json) => ScheduleItem(
-      id: json['id'],
-      timeRange: json['timeRange'],
-      title: json['title'],
-      content: json['content'],
-      icon: json['icon'],
-      tag: json['tag']);
-
-  DateTime? getStartTime(DateTime now) {
-    try {
-      final startStr = timeRange.split("-")[0].trim();
-      final parts = startStr.split(":");
-      return DateTime(now.year, now.month, now.day, int.parse(parts[0]),
-          int.parse(parts[1]));
-    } catch (e) {
-      return null;
-    }
-  }
-
-  DateTime? getEndTime(DateTime now) {
-    try {
-      final endStr = timeRange.split("-")[1].trim();
-      final parts = endStr.split(":");
-      return DateTime(now.year, now.month, now.day, int.parse(parts[0]),
-          int.parse(parts[1]));
-    } catch (e) {
-      return null;
-    }
-  }
-}
-
-class HomeworkItem {
-  String id;
-  String content;
-  bool isDone;
-
-  HomeworkItem({required this.id, required this.content, this.isDone = false});
-
-  Map<String, dynamic> toJson() =>
-      {'id': id, 'content': content, 'isDone': isDone};
-  factory HomeworkItem.fromJson(Map<String, dynamic> json) => HomeworkItem(
-      id: json['id'], content: json['content'], isDone: json['isDone']);
-}
-
-class SubjectHomework {
-  String subject;
-  String icon;
-  List<HomeworkItem> items;
-
-  SubjectHomework(
-      {required this.subject, required this.icon, required this.items});
-
-  Map<String, dynamic> toJson() => {
-        'subject': subject,
-        'icon': icon,
-        'items': items.map((i) => i.toJson()).toList()
-      };
-  factory SubjectHomework.fromJson(Map<String, dynamic> json) =>
-      SubjectHomework(
-          subject: json['subject'],
-          icon: json['icon'],
-          items: (json['items'] as List)
-              .map((i) => HomeworkItem.fromJson(i))
-              .toList());
-
-  double get progress =>
-      items.isEmpty ? 0.0 : items.where((i) => i.isDone).length / items.length;
-}
-
-class DailyLog {
-  String date;
-  double score;
-  int minutes;
-  double completionRate;
-  double avgQuality;
-
-  DailyLog(
-      {required this.date,
-      required this.score,
-      required this.minutes,
-      required this.completionRate,
-      required this.avgQuality});
-
-  Map<String, dynamic> toJson() => {
-        'date': date,
-        'score': score,
-        'minutes': minutes,
-        'completionRate': completionRate,
-        'avgQuality': avgQuality
-      };
-  factory DailyLog.fromJson(Map<String, dynamic> json) => DailyLog(
-        date: json['date'],
-        score: (json['score'] as num).toDouble(),
-        minutes: json['minutes'],
-        completionRate: (json['completionRate'] as num?)?.toDouble() ?? 0.0,
-        avgQuality: (json['avgQuality'] as num?)?.toDouble() ?? 0.0,
-      );
-}
+// 数据模型已拆分到 models/study_models.dart。
 
 // ==========================================
 // 2. 状态管理 (Provider)
 // ==========================================
 
 class AppState extends ChangeNotifier {
+  final StorageService _storage = StorageService();
   List<ScheduleItem> _schedule = [];
   List<SubjectHomework> _homeworks = [];
   List<DailyLog> _logs = [];
@@ -163,10 +42,9 @@ class AppState extends ChangeNotifier {
   }
 
   void _init() async {
-    final prefs = await SharedPreferences.getInstance();
-
-    if (prefs.containsKey('schedule_v8')) {
-      Iterable l = json.decode(prefs.getString('schedule_v8')!);
+    final savedSchedule = await _storage.read(StorageService.scheduleKey);
+    if (savedSchedule != null) {
+      Iterable l = json.decode(savedSchedule);
       _schedule =
           List<ScheduleItem>.from(l.map((x) => ScheduleItem.fromJson(x)));
     } else {
@@ -244,8 +122,9 @@ class AppState extends ChangeNotifier {
       ];
     }
 
-    if (prefs.containsKey('homework_v8')) {
-      Iterable l = json.decode(prefs.getString('homework_v8')!);
+    final savedHomework = await _storage.read(StorageService.homeworkKey);
+    if (savedHomework != null) {
+      Iterable l = json.decode(savedHomework);
       _homeworks =
           List<SubjectHomework>.from(l.map((x) => SubjectHomework.fromJson(x)));
     } else {
@@ -293,8 +172,9 @@ class AppState extends ChangeNotifier {
       ];
     }
 
-    if (prefs.containsKey('logs_v8')) {
-      Iterable l = json.decode(prefs.getString('logs_v8')!);
+    final savedLogs = await _storage.read(StorageService.logsKey);
+    if (savedLogs != null) {
+      Iterable l = json.decode(savedLogs);
       _logs = List<DailyLog>.from(l.map((x) => DailyLog.fromJson(x)));
     }
     notifyListeners();
@@ -312,10 +192,9 @@ class AppState extends ChangeNotifier {
   }
 
   Future<void> _persist() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setString('schedule_v8', json.encode(_schedule));
-    await prefs.setString('homework_v8', json.encode(_homeworks));
-    await prefs.setString('logs_v8', json.encode(_logs));
+    await _storage.write(StorageService.scheduleKey, json.encode(_schedule));
+    await _storage.write(StorageService.homeworkKey, json.encode(_homeworks));
+    await _storage.write(StorageService.logsKey, json.encode(_logs));
     notifyListeners();
   }
 
@@ -369,6 +248,12 @@ class AppState extends ChangeNotifier {
     _persist();
   }
 
+  void deleteScheduleItem(String itemId) {
+    _saveSnapshot();
+    _schedule.removeWhere((item) => item.id == itemId);
+    _persist();
+  }
+
   void addHomeworkItem(String subject, String content) {
     _saveSnapshot();
     var subj = _homeworks.firstWhere((s) => s.subject == subject);
@@ -417,8 +302,7 @@ class AppState extends ChangeNotifier {
   }
 
   void resetAll() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.clear();
+    await _storage.clearWinterPlanData();
     _undoStack.clear();
     _redoStack.clear();
     _init();
@@ -1049,6 +933,7 @@ class ScheduleTab extends StatelessWidget {
     final timeCtrl =
         TextEditingController(text: item?.timeRange ?? "00:00 - 00:00");
     final iconCtrl = TextEditingController(text: item?.icon ?? "📝");
+    final timePattern = RegExp(r'^\d{2}:\d{2}\s*-\s*\d{2}:\d{2}$');
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
@@ -1076,31 +961,46 @@ class ScheduleTab extends StatelessWidget {
                 if (item != null)
                   TextButton(
                       onPressed: () {
+                        ctx.read<AppState>().deleteScheduleItem(item.id);
                         Navigator.pop(ctx);
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("日程已删除")));
                       },
                       child: const Text("删除",
                           style: TextStyle(color: Colors.red))),
                 TextButton(
                     onPressed: () {
+                      if (!timePattern.hasMatch(timeCtrl.text.trim())) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("时间格式应为 09:00 - 11:45")));
+                        return;
+                      }
+                      if (titleCtrl.text.trim().isEmpty ||
+                          contentCtrl.text.trim().isEmpty ||
+                          iconCtrl.text.trim().isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(content: Text("请补全模块名称、内容和图标")));
+                        return;
+                      }
                       final newState = ctx.read<AppState>();
                       var list = List<ScheduleItem>.from(newState.schedule);
                       if (item == null) {
                         list.add(ScheduleItem(
                             id: DateTime.now().toString(),
-                            timeRange: timeCtrl.text,
-                            title: titleCtrl.text,
-                            content: contentCtrl.text,
-                            icon: iconCtrl.text,
+                            timeRange: timeCtrl.text.trim(),
+                            title: titleCtrl.text.trim(),
+                            content: contentCtrl.text.trim(),
+                            icon: iconCtrl.text.trim(),
                             tag: ""));
                       } else {
                         int idx = list.indexWhere((e) => e.id == item.id);
                         if (idx != -1)
                           list[idx] = ScheduleItem(
                               id: item.id,
-                              timeRange: timeCtrl.text,
-                              title: titleCtrl.text,
-                              content: contentCtrl.text,
-                              icon: iconCtrl.text,
+                              timeRange: timeCtrl.text.trim(),
+                              title: titleCtrl.text.trim(),
+                              content: contentCtrl.text.trim(),
+                              icon: iconCtrl.text.trim(),
                               tag: item.tag);
                       }
                       list.sort((a, b) => a.timeRange.compareTo(b.timeRange));
@@ -1436,6 +1336,9 @@ class _SubmitSheetState extends State<SubmitSheet> {
                 context
                     .read<AppState>()
                     .submitLog((widget.seconds / 60).ceil(), _percent, _stars);
+                ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+                    content: Text(
+                        "打卡成功：${(widget.seconds / 60).ceil()} 分钟，完成度 ${_percent.toInt()}%，质量 ${_stars.toInt()} 星")));
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
@@ -1523,7 +1426,7 @@ class SettingsTab extends StatelessWidget {
                   })),
           const SizedBox(height: 40),
           const Center(
-              child: Text("Version 8.1 (Winter Counterattack)",
+              child: Text("Version 1.1.0 (Winter Counterattack)",
                   style: TextStyle(color: Colors.grey))),
         ],
       ),
