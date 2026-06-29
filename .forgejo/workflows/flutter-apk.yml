@@ -87,6 +87,8 @@ jobs:
 
       - name: Publish tag release APK
         if: startsWith(github.ref, 'refs/tags/v')
+        env:
+          RELEASE_TOKEN: ${{ secrets.RELEASE_TOKEN }}
         run: |
           set -e
           apk="/tmp/winterplan-ci/build/app/outputs/flutter-apk/app-debug.apk"
@@ -94,7 +96,7 @@ jobs:
           repo="${FORGEJO_REPOSITORY:-${GITHUB_REPOSITORY}}"
           server="${FORGEJO_SERVER_URL:-${GITHUB_SERVER_URL:-https://github.mindstacklab.ai}}"
           api="${FORGEJO_API_URL:-${GITHUB_API_URL:-$server/api/v1}}"
-          token="${FORGEJO_TOKEN:-${GITHUB_TOKEN}}"
+          token="$RELEASE_TOKEN"
           asset_name="winterplan-${tag}-debug.apk"
 
           if [ -z "$token" ]; then
