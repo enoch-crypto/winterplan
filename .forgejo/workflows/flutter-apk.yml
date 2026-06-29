@@ -14,23 +14,34 @@ jobs:
     runs-on: agent-credmint-macos-intel-direct
 
     steps:
-      - name: Checkout repository
-        uses: https://data.forgejo.org/actions/checkout@v6
+      - name: Prepare repository
+        run: |
+          set -e
+          rm -rf /tmp/winterplan-ci
+          git clone --depth 1 ssh://git@192.168.6.10:222/enoch/winterplan.git /tmp/winterplan-ci
+          cd /tmp/winterplan-ci
+          git rev-parse HEAD
 
       - name: Install dependencies
-        run: flutter pub get
+        run: |
+          cd /tmp/winterplan-ci
+          flutter pub get
 
       - name: Analyze code
-        run: flutter analyze
+        run: |
+          cd /tmp/winterplan-ci
+          flutter analyze
 
       - name: Run tests
-        run: flutter test
+        run: |
+          cd /tmp/winterplan-ci
+          flutter test
 
       - name: Build debug APK
-        run: flutter build apk --debug
+        run: |
+          cd /tmp/winterplan-ci
+          flutter build apk --debug
 
-      - name: Upload APK artifact
-        uses: https://data.forgejo.org/actions/upload-artifact@v3
-        with:
-          name: winterplan-debug-apk
-          path: build/app/outputs/flutter-apk/app-debug.apk
+      - name: Show APK path
+        run: |
+          ls -lh /tmp/winterplan-ci/build/app/outputs/flutter-apk/app-debug.apk
