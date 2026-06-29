@@ -22,35 +22,62 @@ jobs:
           cd /tmp/winterplan-ci
           git rev-parse HEAD
 
+      - name: Setup JDK
+        run: |
+          set -e
+          if /usr/libexec/java_home -v 17 >/dev/null 2>&1; then
+            export JAVA_HOME="$(/usr/libexec/java_home -v 17)"
+          else
+            rm -rf /tmp/jdk17
+            mkdir -p /tmp/jdk17
+            if [ "$(uname -m)" = "arm64" ]; then
+              jdk_url="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.15%2B6/OpenJDK17U-jdk_aarch64_mac_hotspot_17.0.15_6.tar.gz"
+            else
+              jdk_url="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.15%2B6/OpenJDK17U-jdk_x64_mac_hotspot_17.0.15_6.tar.gz"
+            fi
+            curl -L "$jdk_url" -o /tmp/jdk17.tar.gz
+            tar -xzf /tmp/jdk17.tar.gz -C /tmp/jdk17 --strip-components=1
+            export JAVA_HOME="/tmp/jdk17"
+          fi
+          export PATH="$JAVA_HOME/bin:$PATH"
+          java -version
+          cd /tmp/winterplan-ci
+          printf 'org.gradle.java.home=%s\n' "$JAVA_HOME" >> android/gradle.properties
+
       - name: Install dependencies
         run: |
           cd /tmp/winterplan-ci
-          export PATH="/tmp/flutter-sdk/bin:$HOME/development/flutter/bin:/opt/homebrew/bin:$PATH"
+          export JAVA_HOME="$(grep '^org.gradle.java.home=' android/gradle.properties | cut -d= -f2-)"
+          export PATH="$JAVA_HOME/bin:/tmp/flutter-sdk/bin:$HOME/development/flutter/bin:/opt/homebrew/bin:$PATH"
           if ! command -v flutter >/dev/null 2>&1; then
             rm -rf /tmp/flutter-sdk
             git clone --depth 1 -b stable https://github.com/flutter/flutter.git /tmp/flutter-sdk
-            export PATH="/tmp/flutter-sdk/bin:$PATH"
+            export PATH="$JAVA_HOME/bin:/tmp/flutter-sdk/bin:$PATH"
           fi
           flutter --version
           flutter config --no-analytics
+          flutter config --jdk-dir="$JAVA_HOME"
           flutter pub get
 
       - name: Analyze code
         run: |
           cd /tmp/winterplan-ci
-          export PATH="/tmp/flutter-sdk/bin:$HOME/development/flutter/bin:/opt/homebrew/bin:$PATH"
+          export JAVA_HOME="$(grep '^org.gradle.java.home=' android/gradle.properties | cut -d= -f2-)"
+          export PATH="$JAVA_HOME/bin:/tmp/flutter-sdk/bin:$HOME/development/flutter/bin:/opt/homebrew/bin:$PATH"
           flutter analyze
 
       - name: Run tests
         run: |
           cd /tmp/winterplan-ci
-          export PATH="/tmp/flutter-sdk/bin:$HOME/development/flutter/bin:/opt/homebrew/bin:$PATH"
+          export JAVA_HOME="$(grep '^org.gradle.java.home=' android/gradle.properties | cut -d= -f2-)"
+          export PATH="$JAVA_HOME/bin:/tmp/flutter-sdk/bin:$HOME/development/flutter/bin:/opt/homebrew/bin:$PATH"
           flutter test
 
       - name: Build debug APK
         run: |
           cd /tmp/winterplan-ci
-          export PATH="/tmp/flutter-sdk/bin:$HOME/development/flutter/bin:/opt/homebrew/bin:$PATH"
+          export JAVA_HOME="$(grep '^org.gradle.java.home=' android/gradle.properties | cut -d= -f2-)"
+          export PATH="$JAVA_HOME/bin:/tmp/flutter-sdk/bin:$HOME/development/flutter/bin:/opt/homebrew/bin:$PATH"
           flutter doctor -v
           flutter build apk --debug
 
