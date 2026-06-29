@@ -37,7 +37,7 @@ jobs:
             fi
             curl -L "$jdk_url" -o /tmp/jdk17.tar.gz
             tar -xzf /tmp/jdk17.tar.gz -C /tmp/jdk17 --strip-components=1
-            export JAVA_HOME="/tmp/jdk17"
+            export JAVA_HOME="/tmp/jdk17/Contents/Home"
           fi
           export PATH="$JAVA_HOME/bin:$PATH"
           java -version
