@@ -25,21 +25,33 @@ jobs:
       - name: Install dependencies
         run: |
           cd /tmp/winterplan-ci
+          export PATH="/tmp/flutter-sdk/bin:$HOME/development/flutter/bin:/opt/homebrew/bin:$PATH"
+          if ! command -v flutter >/dev/null 2>&1; then
+            rm -rf /tmp/flutter-sdk
+            git clone --depth 1 -b stable https://github.com/flutter/flutter.git /tmp/flutter-sdk
+            export PATH="/tmp/flutter-sdk/bin:$PATH"
+          fi
+          flutter --version
+          flutter config --no-analytics
           flutter pub get
 
       - name: Analyze code
         run: |
           cd /tmp/winterplan-ci
+          export PATH="/tmp/flutter-sdk/bin:$HOME/development/flutter/bin:/opt/homebrew/bin:$PATH"
           flutter analyze
 
       - name: Run tests
         run: |
           cd /tmp/winterplan-ci
+          export PATH="/tmp/flutter-sdk/bin:$HOME/development/flutter/bin:/opt/homebrew/bin:$PATH"
           flutter test
 
       - name: Build debug APK
         run: |
           cd /tmp/winterplan-ci
+          export PATH="/tmp/flutter-sdk/bin:$HOME/development/flutter/bin:/opt/homebrew/bin:$PATH"
+          flutter doctor -v
           flutter build apk --debug
 
       - name: Show APK path
