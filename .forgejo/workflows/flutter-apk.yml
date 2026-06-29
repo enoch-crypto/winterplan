@@ -11,10 +11,7 @@ on:
 
 jobs:
   build-apk:
-    runs-on: ubuntu-latest
-
-    container:
-      image: ghcr.io/cirruslabs/flutter:stable
+    runs-on: agent-credmint-macos-intel-direct
 
     steps:
       - name: Checkout repository
