@@ -1,0 +1,19 @@
+name: Runner Smoke Test
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+
+jobs:
+  smoke:
+    runs-on: agent-credmint-macos-intel-direct
+
+    steps:
+      - name: Print runner info
+        run: |
+          echo "runner smoke test"
+          uname -a
+          whoami
+          pwd
