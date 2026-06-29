@@ -125,6 +125,5 @@ jobs:
 
           curl -sS --fail -X POST \
             -H "Authorization: token $token" \
-            -H "Content-Type: application/vnd.android.package-archive" \
-            --data-binary "@$apk" \
+            -F "attachment=@$apk;filename=$asset_name;type=application/vnd.android.package-archive" \
             "$api/repos/$repo/releases/$release_id/assets?name=$asset_name"
