@@ -118,6 +118,34 @@ class TodoItem {
       );
 }
 
+class CalendarEvent {
+  String id;
+  String date;
+  String title;
+  String note;
+
+  CalendarEvent({
+    required this.id,
+    required this.date,
+    required this.title,
+    required this.note,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'date': date,
+        'title': title,
+        'note': note,
+      };
+
+  factory CalendarEvent.fromJson(Map<String, dynamic> json) => CalendarEvent(
+        id: json['id'],
+        date: json['date'],
+        title: json['title'],
+        note: json['note'] ?? '',
+      );
+}
+
 class SubjectHomework {
   String subject;
   String icon;

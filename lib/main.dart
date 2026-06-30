@@ -27,6 +27,7 @@ class AppState extends ChangeNotifier {
   List<SubjectHomework> _homeworks = [];
   List<DailyLog> _logs = [];
   List<TodoItem> _todos = [];
+  List<CalendarEvent> _events = [];
 
   List<String> _undoStack = [];
   List<String> _redoStack = [];
@@ -35,9 +36,15 @@ class AppState extends ChangeNotifier {
   List<SubjectHomework> get homeworks => _homeworks;
   List<DailyLog> get logs => _logs;
   List<TodoItem> get todos => _todos;
+  List<CalendarEvent> get events => _events;
 
   int get pendingTodoCount => _todos.where((todo) => !todo.isDone).length;
   int get completedTodoCount => _todos.where((todo) => todo.isDone).length;
+
+  List<CalendarEvent> eventsForDate(DateTime date) {
+    final key = DateFormat('yyyy-MM-dd').format(date);
+    return _events.where((event) => event.date == key).toList();
+  }
 
   bool get canUndo => _undoStack.isNotEmpty;
   bool get canRedo => _redoStack.isNotEmpty;
@@ -57,73 +64,73 @@ class AppState extends ChangeNotifier {
         ScheduleItem(
             id: '1',
             timeRange: "08:30 - 09:00",
-            title: "☀️ 启动",
-            content: "起床、早餐、醒脑",
+            title: "起床整理",
+            content: "洗漱、早餐、准备今天",
             icon: "☀️",
             tag: ""),
         ScheduleItem(
             id: '2',
-            timeRange: "09:00 - 11:45",
-            title: "🧠 硬核运算",
-            content: "物理压轴题 + 化学二模卷",
+            timeRange: "09:00 - 11:00",
+            title: "上午专注",
+            content: "学习、工作或重要任务",
             icon: "🧠",
-            tag: "🔥"),
+            tag: ""),
         ScheduleItem(
             id: '3',
-            timeRange: "11:45 - 12:30",
-            title: "🍲 能量补给",
-            content: "午餐",
-            icon: "🍲",
+            timeRange: "11:00 - 12:00",
+            title: "整理复盘",
+            content: "记录进度、处理消息",
+            icon: "📝",
             tag: ""),
         ScheduleItem(
             id: '4',
-            timeRange: "12:30 - 13:15",
-            title: "🎹 艺术留白",
-            content: "钢琴 / 电影 / 课外书",
-            icon: "🎹",
-            tag: "🎵"),
+            timeRange: "12:00 - 13:00",
+            title: "午餐休息",
+            content: "吃饭、放松",
+            icon: "🍲",
+            tag: ""),
         ScheduleItem(
             id: '5',
-            timeRange: "13:15 - 13:45",
-            title: "🔋 快速充电",
-            content: "午休（30分钟）",
+            timeRange: "13:00 - 14:00",
+            title: "午休充电",
+            content: "短休息、恢复精力",
             icon: "🔋",
-            tag: "💤"),
+            tag: ""),
         ScheduleItem(
             id: '6',
-            timeRange: "13:45 - 16:15",
-            title: "📐 综合逻辑",
-            content: "数学几何/函数 + 英语D篇",
-            icon: "📐",
-            tag: "✍️"),
+            timeRange: "14:00 - 17:00",
+            title: "下午任务",
+            content: "推进当天主要事项",
+            icon: "📌",
+            tag: ""),
         ScheduleItem(
             id: '7',
-            timeRange: "16:15 - 18:15",
-            title: "⚽ 激流勇进",
-            content: "足球 / 户外运动",
-            icon: "⚽",
-            tag: "🏃"),
+            timeRange: "17:00 - 18:30",
+            title: "运动放松",
+            content: "散步、运动或户外活动",
+            icon: "🏃",
+            tag: ""),
         ScheduleItem(
             id: '8',
-            timeRange: "18:15 - 19:15",
-            title: "🍽️ 晚餐调整",
-            content: "晚餐 + 家庭聊天",
+            timeRange: "18:30 - 19:30",
+            title: "晚餐",
+            content: "吃饭、休息、聊天",
             icon: "🍽️",
             tag: ""),
         ScheduleItem(
             id: '9',
-            timeRange: "19:15 - 20:45",
-            title: "📝 输出/复盘",
-            content: "文科背诵 + App打卡",
-            icon: "📝",
-            tag: "🔄"),
+            timeRange: "19:30 - 21:00",
+            title: "晚间复盘",
+            content: "整理、阅读、打卡",
+            icon: "🌙",
+            tag: ""),
         ScheduleItem(
             id: '10',
-            timeRange: "20:45 - 21:30",
-            title: "🚿 自由洗漱",
-            content: "洗澡、准备睡觉",
-            icon: "🚿",
-            tag: "🌙"),
+            timeRange: "21:00 - 22:00",
+            title: "睡前准备",
+            content: "洗漱、收尾、准备睡觉",
+            icon: "🛏️",
+            tag: ""),
       ];
     }
 
@@ -134,45 +141,22 @@ class AppState extends ChangeNotifier {
           List<SubjectHomework>.from(l.map((x) => SubjectHomework.fromJson(x)));
     } else {
       _homeworks = [
-        SubjectHomework(subject: "物理", icon: "⚡", items: [
-          HomeworkItem(id: 'p1', content: "空中课堂：19个实验视频"),
-          HomeworkItem(id: 'p2', content: "寒假指导册 (2.1 提交)"),
-          HomeworkItem(id: 'p3', content: "寒假指导册 (2.8 提交)"),
-          HomeworkItem(id: 'p4', content: "寒假指导册 (2.15 提交)"),
-          HomeworkItem(id: 'p5', content: "寒假指导册 (2.22 提交)"),
-          HomeworkItem(id: 'p6', content: "校本：压强/电学压轴题"),
-          HomeworkItem(id: 'p7', content: "二模卷八选做"),
+        SubjectHomework(subject: "健康", icon: "🏃", items: [
+          HomeworkItem(id: 'health1', content: "运动 30 分钟"),
+          HomeworkItem(id: 'health2', content: "喝水 6 杯"),
+          HomeworkItem(id: 'health3', content: "按时睡觉"),
         ]),
-        SubjectHomework(subject: "数学", icon: "📐", items: [
-          HomeworkItem(id: 'm1', content: "寒假指导册 (224篇)"),
-          HomeworkItem(id: 'm2', content: "空中课堂查漏补缺"),
-          HomeworkItem(id: 'm3', content: "完成 24, 25(1)(2) 巩固"),
-          HomeworkItem(id: 'm4', content: "17题巩固"),
+        SubjectHomework(subject: "学习/工作", icon: "🧠", items: [
+          HomeworkItem(id: 'focus1', content: "完成一个重要任务"),
+          HomeworkItem(id: 'focus2', content: "复盘今天进度"),
         ]),
-        SubjectHomework(subject: "英语", icon: "🔤", items: [
-          HomeworkItem(id: 'e1', content: "考纲词汇 (全部单词+词组)"),
-          HomeworkItem(id: 'e2', content: "22年一模卷 (6张)"),
-          HomeworkItem(id: 'e3', content: "22年二模卷 (全部)"),
-          HomeworkItem(id: 'e4', content: "作文 (2006年-一模)"),
-          HomeworkItem(id: 'e5', content: "C篇 / D篇 专项训练"),
+        SubjectHomework(subject: "生活", icon: "🏠", items: [
+          HomeworkItem(id: 'life1', content: "整理房间或桌面"),
+          HomeworkItem(id: 'life2', content: "准备明天要用的东西"),
         ]),
-        SubjectHomework(subject: "化学", icon: "🧪", items: [
-          HomeworkItem(id: 'c1', content: "指导册 P35-38 (2.6发)"),
-          HomeworkItem(id: 'c2', content: "指导册 P39-44 (2.13发)"),
-          HomeworkItem(id: 'c3', content: "指导册 P51-58 (2.24发)"),
-          HomeworkItem(id: 'c4', content: "2025杨浦二模 + 2026虹口一模"),
-          HomeworkItem(id: 'c5', content: "选做：静安/徐汇/黄浦二模"),
-        ]),
-        SubjectHomework(subject: "文综/其他", icon: "📜", items: [
-          HomeworkItem(id: 'o1', content: "历史：中国史1-4册笔记"),
-          HomeworkItem(id: 'o2', content: "道法：3次作业 (钉钉提交)"),
-          HomeworkItem(id: 'o3', content: "地理/生物：核心图册背诵"),
-          HomeworkItem(id: 'o4', content: "社会实践：年夜饭/非遗/幸福家书"),
-        ]),
-        SubjectHomework(subject: "体育", icon: "🏃", items: [
-          HomeworkItem(id: 's1', content: "每日足球 1.5-2h"),
-          HomeworkItem(id: 's2', content: "俯卧撑 30-50/天"),
-          HomeworkItem(id: 's3', content: "仰卧起坐 100-200/天"),
+        SubjectHomework(subject: "兴趣", icon: "🎧", items: [
+          HomeworkItem(id: 'fun1', content: "阅读、音乐或放松 20 分钟"),
+          HomeworkItem(id: 'fun2', content: "记录一个今天的小收获"),
         ]),
       ];
     }
@@ -188,6 +172,13 @@ class AppState extends ChangeNotifier {
       Iterable l = json.decode(savedTodos);
       _todos = List<TodoItem>.from(l.map((x) => TodoItem.fromJson(x)));
     }
+
+    final savedEvents = await _storage.read(StorageService.eventsKey);
+    if (savedEvents != null) {
+      Iterable l = json.decode(savedEvents);
+      _events =
+          List<CalendarEvent>.from(l.map((x) => CalendarEvent.fromJson(x)));
+    }
     notifyListeners();
   }
 
@@ -196,7 +187,8 @@ class AppState extends ChangeNotifier {
       'schedule': json.encode(_schedule),
       'homeworks': json.encode(_homeworks),
       'logs': json.encode(_logs),
-      'todos': json.encode(_todos)
+      'todos': json.encode(_todos),
+      'events': json.encode(_events)
     });
     _undoStack.add(snapshot);
     if (_undoStack.length > 20) _undoStack.removeAt(0);
@@ -208,6 +200,7 @@ class AppState extends ChangeNotifier {
     await _storage.write(StorageService.homeworkKey, json.encode(_homeworks));
     await _storage.write(StorageService.logsKey, json.encode(_logs));
     await _storage.write(StorageService.todosKey, json.encode(_todos));
+    await _storage.write(StorageService.eventsKey, json.encode(_events));
     notifyListeners();
   }
 
@@ -296,6 +289,26 @@ class AppState extends ChangeNotifier {
     _persist();
   }
 
+  void addCalendarEvent(DateTime date, String title, String note) {
+    final trimmedTitle = title.trim();
+    if (trimmedTitle.isEmpty) return;
+    _saveSnapshot();
+    _events.add(CalendarEvent(
+      id: DateTime.now().microsecondsSinceEpoch.toString(),
+      date: DateFormat('yyyy-MM-dd').format(date),
+      title: trimmedTitle,
+      note: note.trim(),
+    ));
+    _events.sort((a, b) => a.date.compareTo(b.date));
+    _persist();
+  }
+
+  void deleteCalendarEvent(String eventId) {
+    _saveSnapshot();
+    _events.removeWhere((event) => event.id == eventId);
+    _persist();
+  }
+
   void deleteScheduleItem(String itemId) {
     _saveSnapshot();
     _schedule.removeWhere((item) => item.id == itemId);
@@ -323,7 +336,8 @@ class AppState extends ChangeNotifier {
       'schedule': json.encode(_schedule),
       'homeworks': json.encode(_homeworks),
       'logs': json.encode(_logs),
-      'todos': json.encode(_todos)
+      'todos': json.encode(_todos),
+      'events': json.encode(_events)
     }));
     _restore(_undoStack.removeLast());
   }
@@ -334,7 +348,8 @@ class AppState extends ChangeNotifier {
       'schedule': json.encode(_schedule),
       'homeworks': json.encode(_homeworks),
       'logs': json.encode(_logs),
-      'todos': json.encode(_todos)
+      'todos': json.encode(_todos),
+      'events': json.encode(_events)
     }));
     _restore(_redoStack.removeLast());
   }
@@ -354,6 +369,12 @@ class AppState extends ChangeNotifier {
     } else {
       _todos = [];
     }
+    if (map['events'] != null) {
+      _events = List<CalendarEvent>.from((json.decode(map['events']) as List)
+          .map((x) => CalendarEvent.fromJson(x)));
+    } else {
+      _events = [];
+    }
     _persist();
   }
 
@@ -370,13 +391,14 @@ class AppState extends ChangeNotifier {
         'schedule': json.encode(_schedule),
         'homeworks': json.encode(_homeworks),
         'logs': json.encode(_logs),
-        'todos': json.encode(_todos)
+        'todos': json.encode(_todos),
+        'events': json.encode(_events)
       });
       final directory = await getTemporaryDirectory();
       final file = File(
           '${directory.path}/winter_backup_${DateFormat('MMdd_HHmm').format(DateTime.now())}.json');
       await file.writeAsString(jsonStr);
-      await Share.shareXFiles([XFile(file.path)], text: '寒假作战数据备份');
+      await Share.shareXFiles([XFile(file.path)], text: '作息打卡数据备份');
     } catch (e) {
       ScaffoldMessenger.of(context)
           .showSnackBar(SnackBar(content: Text("备份失败: $e")));
@@ -401,6 +423,11 @@ class AppState extends ChangeNotifier {
         if (map['todos'] != null) {
           _todos = List<TodoItem>.from((json.decode(map['todos']) as List)
               .map((x) => TodoItem.fromJson(x)));
+        }
+        if (map['events'] != null) {
+          _events = List<CalendarEvent>.from(
+              (json.decode(map['events']) as List)
+                  .map((x) => CalendarEvent.fromJson(x)));
         }
         _persist();
         ScaffoldMessenger.of(context)
@@ -432,7 +459,7 @@ class WinterApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '凛冬反击',
+      title: '作息打卡',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.light,
@@ -472,6 +499,7 @@ class _MainScreenState extends State<MainScreen> {
   final _pages = [
     const DashboardTab(),
     const ScheduleTab(),
+    const CalendarTab(),
     const HomeworkTab(),
     const TodoTab(),
     const SettingsTab()
@@ -506,9 +534,13 @@ class _MainScreenState extends State<MainScreen> {
                     Icon(Icons.calendar_today, color: Color(0xFF007AFF)),
                 label: '日程'),
             NavigationDestination(
+                icon: Icon(Icons.event_note_outlined),
+                selectedIcon: Icon(Icons.event_note, color: Color(0xFF007AFF)),
+                label: '月历'),
+            NavigationDestination(
                 icon: Icon(Icons.checklist_outlined),
                 selectedIcon: Icon(Icons.checklist, color: Color(0xFF007AFF)),
-                label: '作业'),
+                label: '事项'),
             NavigationDestination(
                 icon: Icon(Icons.task_alt_outlined),
                 selectedIcon: Icon(Icons.task_alt, color: Color(0xFF007AFF)),
@@ -532,15 +564,10 @@ class DashboardTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
 
-    final targetDate = DateTime(2026, 6, 15);
-    final daysLeft = targetDate.difference(DateTime.now()).inDays;
-
-    final winterEnd = DateTime(2026, 2, 27);
-    final winterLeft = winterEnd.difference(DateTime.now()).inDays;
-
     ScheduleItem? currentItem;
     ScheduleItem? nextItem;
     final now = DateTime.now();
+    final todayEvents = state.eventsForDate(now);
     for (var item in state.schedule) {
       final start = item.getStartTime(now);
       final end = item.getEndTime(now);
@@ -562,9 +589,9 @@ class DashboardTab extends StatelessWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("寒假作战指挥部",
+            const Text("日常作息打卡",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            Text("代号：凛冬反击 | Designed by EnochW",
+            Text("安排、专注、复盘，每天都能微调",
                 style: TextStyle(fontSize: 10, color: Colors.grey[600])),
           ],
         ),
@@ -575,9 +602,9 @@ class DashboardTab extends StatelessWidget {
             decoration: BoxDecoration(
                 color: const Color(0xFFFF3B30).withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(20)),
-            child: Text("距2026中考 $daysLeft 天",
+            child: Text("今日 ${DateFormat('M.d').format(now)}",
                 style: const TextStyle(
-                    color: Color(0xFFFF3B30),
+                    color: Color(0xFF007AFF),
                     fontWeight: FontWeight.bold,
                     fontSize: 12)),
           )
@@ -674,13 +701,18 @@ class DashboardTab extends StatelessWidget {
                     children: [
                       const Text("当前阶段",
                           style: TextStyle(color: Colors.white70)),
-                      const Text("寒假攻坚期 (2.2 - 2.27)",
+                      const Text("今日节奏",
                           style: TextStyle(
                               color: Colors.white,
                               fontWeight: FontWeight.bold,
                               fontSize: 16)),
                       const SizedBox(height: 8),
-                      Text(winterLeft > 0 ? "剩余 $winterLeft 天" : "假期已结束",
+                      Text(
+                          currentItem != null
+                              ? currentItem.title
+                              : nextItem != null
+                                  ? "下一项：${nextItem.title}"
+                                  : "今天的日程已结束",
                           style: const TextStyle(
                               color: Colors.white,
                               fontSize: 24,
@@ -693,20 +725,45 @@ class DashboardTab extends StatelessWidget {
                   decoration: BoxDecoration(
                       color: Colors.white.withValues(alpha: 0.2),
                       shape: BoxShape.circle),
-                  child: const Icon(Icons.snowboarding,
+                  child: const Icon(Icons.auto_awesome_motion,
                       color: Colors.white, size: 32),
                 )
               ],
             ),
           ),
 
+          if (todayEvents.isNotEmpty) ...[
+            const SizedBox(height: 16),
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    const Text("今日特殊安排",
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 8),
+                    ...todayEvents.map((event) => ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: const Icon(Icons.event_available,
+                              color: Color(0xFF007AFF)),
+                          title: Text(event.title),
+                          subtitle:
+                              event.note.isEmpty ? null : Text(event.note),
+                        )),
+                  ],
+                ),
+              ),
+            ),
+          ],
+
           const SizedBox(height: 24),
-          const Text("综合数据中心",
+          const Text("打卡数据中心",
               style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
           const SizedBox(height: 12),
 
-          _buildChartCard(
-              "综合评定曲线 (2.2 - 2.27)", _buildFixedLineChart(state.logs)),
+          _buildChartCard("最近 30 天评分曲线", _buildFixedLineChart(state.logs)),
 
           const SizedBox(height: 12),
           // 🔴 修复溢出：调整宽高比 + 使用 FittedBox
@@ -720,7 +777,7 @@ class DashboardTab extends StatelessWidget {
               crossAxisSpacing: 12,
               children: [
                 _buildStatCard(
-                    "总学习时长",
+                    "总投入时长",
                     "${(state.logs.fold(0, (sum, l) => sum + l.minutes) / 60).toStringAsFixed(1)} h",
                     Icons.timer,
                     Colors.orange),
@@ -768,8 +825,10 @@ class DashboardTab extends StatelessWidget {
 
   Widget _buildFixedLineChart(List<DailyLog> logs) {
     List<FlSpot> spots = [];
-    final startDate = DateTime(2026, 2, 2);
-    final endDate = DateTime(2026, 2, 27);
+    final today = DateTime.now();
+    final startDate = DateTime(today.year, today.month, today.day)
+        .subtract(const Duration(days: 29));
+    final endDate = DateTime(today.year, today.month, today.day);
     int totalDays = endDate.difference(startDate).inDays + 1;
 
     for (int i = 0; i < totalDays; i++) {
@@ -1038,7 +1097,8 @@ class ScheduleTab extends StatelessWidget {
                     onPressed: () {
                       if (!timePattern.hasMatch(timeCtrl.text.trim())) {
                         ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(content: Text("时间格式应为 09:00 - 11:45")));
+                            const SnackBar(
+                                content: Text("时间格式应为 09:00 - 11:45")));
                         return;
                       }
                       if (titleCtrl.text.trim().isEmpty ||
@@ -1079,6 +1139,208 @@ class ScheduleTab extends StatelessWidget {
   }
 }
 
+class CalendarTab extends StatefulWidget {
+  const CalendarTab({super.key});
+
+  @override
+  State<CalendarTab> createState() => _CalendarTabState();
+}
+
+class _CalendarTabState extends State<CalendarTab> {
+  DateTime _selectedDate = DateTime.now();
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+    final today = DateTime.now();
+    final startDate = DateTime(today.year, today.month, today.day);
+    final days = List.generate(30, (i) => startDate.add(Duration(days: i)));
+    final selectedEvents = state.eventsForDate(_selectedDate);
+    const weekdays = ['一', '二', '三', '四', '五', '六', '日'];
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F7),
+      appBar: AppBar(title: const Text("未来一个月")),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(12),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                itemCount: days.length,
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 7,
+                  mainAxisSpacing: 8,
+                  crossAxisSpacing: 8,
+                  childAspectRatio: 0.82,
+                ),
+                itemBuilder: (ctx, index) {
+                  final date = days[index];
+                  final isSelected = DateUtils.isSameDay(date, _selectedDate);
+                  final isToday = DateUtils.isSameDay(date, today);
+                  final events = state.eventsForDate(date);
+                  return InkWell(
+                    borderRadius: BorderRadius.circular(12),
+                    onTap: () => setState(() => _selectedDate = date),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(vertical: 8),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? const Color(0xFF007AFF)
+                            : isToday
+                                ? const Color(0xFF007AFF)
+                                    .withValues(alpha: 0.08)
+                                : const Color(0xFFF5F5F7),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(
+                          color: isToday
+                              ? const Color(0xFF007AFF)
+                              : Colors.transparent,
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            "周${weekdays[date.weekday - 1]}",
+                            style: TextStyle(
+                              fontSize: 10,
+                              color: isSelected ? Colors.white70 : Colors.grey,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Text(
+                            "${date.day}",
+                            style: TextStyle(
+                              fontSize: 18,
+                              fontWeight: FontWeight.bold,
+                              color: isSelected ? Colors.white : Colors.black,
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          Container(
+                            width: 6,
+                            height: 6,
+                            decoration: BoxDecoration(
+                              color: events.isEmpty
+                                  ? Colors.transparent
+                                  : isSelected
+                                      ? Colors.white
+                                      : const Color(0xFFFF9500),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Row(
+            children: [
+              Expanded(
+                child: Text(
+                  "${DateFormat('M月d日').format(_selectedDate)} 周${weekdays[_selectedDate.weekday - 1]}",
+                  style: const TextStyle(
+                      fontSize: 18, fontWeight: FontWeight.bold),
+                ),
+              ),
+              FilledButton.icon(
+                onPressed: () => _showEventDialog(context, _selectedDate),
+                icon: const Icon(Icons.add, size: 18),
+                label: const Text("添加"),
+              ),
+            ],
+          ),
+          const SizedBox(height: 12),
+          if (selectedEvents.isEmpty)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(24),
+                child: Column(
+                  children: [
+                    Icon(Icons.event_available,
+                        color: Colors.grey.withValues(alpha: 0.45), size: 44),
+                    const SizedBox(height: 10),
+                    const Text("这一天没有特殊安排",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 6),
+                    const Text("点右上角添加一件特殊事件。",
+                        style: TextStyle(color: Colors.grey)),
+                  ],
+                ),
+              ),
+            )
+          else
+            ...selectedEvents.map((event) => Card(
+                  child: ListTile(
+                    leading: const Icon(Icons.event, color: Color(0xFF007AFF)),
+                    title: Text(event.title,
+                        style: const TextStyle(fontWeight: FontWeight.bold)),
+                    subtitle: event.note.isEmpty ? null : Text(event.note),
+                    trailing: IconButton(
+                      tooltip: "删除",
+                      icon: const Icon(Icons.delete_outline, color: Colors.red),
+                      onPressed: () => context
+                          .read<AppState>()
+                          .deleteCalendarEvent(event.id),
+                    ),
+                  ),
+                )),
+        ],
+      ),
+    );
+  }
+
+  void _showEventDialog(BuildContext context, DateTime date) {
+    final titleCtrl = TextEditingController();
+    final noteCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text("添加 ${DateFormat('M月d日').format(date)} 安排"),
+        content: SingleChildScrollView(
+          child: Column(
+            children: [
+              TextField(
+                controller: titleCtrl,
+                decoration: const InputDecoration(labelText: "事件名称"),
+                autofocus: true,
+              ),
+              TextField(
+                controller: noteCtrl,
+                decoration: const InputDecoration(labelText: "备注，可不填"),
+                minLines: 1,
+                maxLines: 3,
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton(
+              onPressed: () => Navigator.pop(ctx), child: const Text("取消")),
+          TextButton(
+            onPressed: () {
+              if (titleCtrl.text.trim().isEmpty) return;
+              ctx
+                  .read<AppState>()
+                  .addCalendarEvent(date, titleCtrl.text, noteCtrl.text);
+              Navigator.pop(ctx);
+            },
+            child: const Text("添加"),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class HomeworkTab extends StatelessWidget {
   const HomeworkTab({super.key});
   @override
@@ -1086,7 +1348,7 @@ class HomeworkTab extends StatelessWidget {
     final state = context.watch<AppState>();
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7),
-      appBar: AppBar(title: const Text("寒假作业总库")),
+      appBar: AppBar(title: const Text("日常事项库")),
       body: ListView.builder(
         padding: const EdgeInsets.all(16),
         itemCount: state.homeworks.length,
@@ -1157,7 +1419,7 @@ class HomeworkTab extends StatelessWidget {
     showDialog(
         context: context,
         builder: (ctx) => AlertDialog(
-              title: Text("添加 $subject 作业"),
+              title: Text("添加 $subject 事项"),
               content: TextField(
                   controller: ctrl,
                   decoration: const InputDecoration(hintText: "请输入具体内容")),
@@ -1651,7 +1913,7 @@ class SettingsTab extends StatelessWidget {
                         context: context,
                         builder: (ctx) => AlertDialog(
                               title: const Text("警告"),
-                              content: const Text("这将清空所有打卡记录和作业进度，确定吗？"),
+                              content: const Text("这将清空所有打卡记录、事项进度和特殊安排，确定吗？"),
                               actions: [
                                 TextButton(
                                     onPressed: () => Navigator.pop(ctx),
@@ -1668,7 +1930,7 @@ class SettingsTab extends StatelessWidget {
                   })),
           const SizedBox(height: 40),
           const Center(
-              child: Text("Version 1.1.0 (Winter Counterattack)",
+              child: Text("Version 1.3.0 (Daily Routine)",
                   style: TextStyle(color: Colors.grey))),
         ],
       ),
