@@ -1153,91 +1153,111 @@ class _CalendarTabState extends State<CalendarTab> {
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
     final today = DateTime.now();
-    final startDate = DateTime(today.year, today.month, today.day);
-    final days = List.generate(30, (i) => startDate.add(Duration(days: i)));
+    final monthStart = DateTime(today.year, today.month, 1);
+    final nextMonth = DateTime(today.year, today.month + 1, 1);
+    final daysInMonth = nextMonth.difference(monthStart).inDays;
+    final leadingEmptyCount = monthStart.weekday % 7;
+    final totalCells = leadingEmptyCount + daysInMonth;
     final selectedEvents = state.eventsForDate(_selectedDate);
-    const weekdays = ['一', '二', '三', '四', '五', '六', '日'];
+    const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
 
     return Scaffold(
       backgroundColor: const Color(0xFFF5F5F7),
-      appBar: AppBar(title: const Text("未来一个月")),
+      appBar: AppBar(title: Text(DateFormat('yyyy年M月').format(today))),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(12),
-              child: GridView.builder(
-                shrinkWrap: true,
-                physics: const NeverScrollableScrollPhysics(),
-                itemCount: days.length,
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                  crossAxisCount: 7,
-                  mainAxisSpacing: 8,
-                  crossAxisSpacing: 8,
-                  childAspectRatio: 0.82,
-                ),
-                itemBuilder: (ctx, index) {
-                  final date = days[index];
-                  final isSelected = DateUtils.isSameDay(date, _selectedDate);
-                  final isToday = DateUtils.isSameDay(date, today);
-                  final events = state.eventsForDate(date);
-                  return InkWell(
-                    borderRadius: BorderRadius.circular(12),
-                    onTap: () => setState(() => _selectedDate = date),
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(vertical: 8),
-                      decoration: BoxDecoration(
-                        color: isSelected
-                            ? const Color(0xFF007AFF)
-                            : isToday
-                                ? const Color(0xFF007AFF)
-                                    .withValues(alpha: 0.08)
-                                : const Color(0xFFF5F5F7),
-                        borderRadius: BorderRadius.circular(12),
-                        border: Border.all(
-                          color: isToday
-                              ? const Color(0xFF007AFF)
-                              : Colors.transparent,
-                        ),
-                      ),
-                      child: Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Text(
-                            "周${weekdays[date.weekday - 1]}",
-                            style: TextStyle(
-                              fontSize: 10,
-                              color: isSelected ? Colors.white70 : Colors.grey,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            "${date.day}",
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: isSelected ? Colors.white : Colors.black,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Container(
-                            width: 6,
-                            height: 6,
-                            decoration: BoxDecoration(
-                              color: events.isEmpty
-                                  ? Colors.transparent
-                                  : isSelected
-                                      ? Colors.white
-                                      : const Color(0xFFFF9500),
-                              shape: BoxShape.circle,
-                            ),
-                          ),
-                        ],
-                      ),
+              padding: const EdgeInsets.fromLTRB(14, 18, 14, 16),
+              child: Column(
+                children: [
+                  Row(
+                    children: weekdays
+                        .map((day) => Expanded(
+                              child: Center(
+                                child: Text(
+                                  day,
+                                  style: const TextStyle(
+                                    color: Colors.grey,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                              ),
+                            ))
+                        .toList(),
+                  ),
+                  const SizedBox(height: 12),
+                  GridView.builder(
+                    shrinkWrap: true,
+                    physics: const NeverScrollableScrollPhysics(),
+                    itemCount: totalCells,
+                    gridDelegate:
+                        const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 7,
+                      mainAxisSpacing: 10,
+                      crossAxisSpacing: 6,
+                      childAspectRatio: 0.72,
                     ),
-                  );
-                },
+                    itemBuilder: (ctx, index) {
+                      if (index < leadingEmptyCount) {
+                        return const SizedBox.shrink();
+                      }
+                      final day = index - leadingEmptyCount + 1;
+                      final date = DateTime(today.year, today.month, day);
+                      final isSelected =
+                          DateUtils.isSameDay(date, _selectedDate);
+                      final isToday = DateUtils.isSameDay(date, today);
+                      final events = state.eventsForDate(date);
+                      return InkWell(
+                        borderRadius: BorderRadius.circular(18),
+                        onTap: () => setState(() => _selectedDate = date),
+                        child: Container(
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? const Color(0xFF007AFF)
+                                : Colors.transparent,
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: isToday
+                                  ? const Color(0xFF007AFF)
+                                  : Colors.transparent,
+                              width: 1.4,
+                            ),
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Text(
+                                "$day",
+                                style: TextStyle(
+                                  fontSize: 19,
+                                  fontWeight: FontWeight.w700,
+                                  color:
+                                      isSelected ? Colors.white : Colors.black,
+                                ),
+                              ),
+                              const SizedBox(height: 8),
+                              Container(
+                                width: 5,
+                                height: 5,
+                                decoration: BoxDecoration(
+                                  color: events.isEmpty
+                                      ? Colors.transparent
+                                      : isSelected
+                                          ? Colors.white
+                                          : const Color(0xFFFF9500),
+                                  shape: BoxShape.circle,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      );
+                    },
+                  ),
+                ],
               ),
             ),
           ),
@@ -1246,7 +1266,7 @@ class _CalendarTabState extends State<CalendarTab> {
             children: [
               Expanded(
                 child: Text(
-                  "${DateFormat('M月d日').format(_selectedDate)} 周${weekdays[_selectedDate.weekday - 1]}",
+                  "${DateFormat('M月d日').format(_selectedDate)} 周${weekdays[_selectedDate.weekday % 7]}",
                   style: const TextStyle(
                       fontSize: 18, fontWeight: FontWeight.bold),
                 ),
@@ -1271,7 +1291,7 @@ class _CalendarTabState extends State<CalendarTab> {
                     const Text("这一天没有特殊安排",
                         style: TextStyle(fontWeight: FontWeight.bold)),
                     const SizedBox(height: 6),
-                    const Text("点右上角添加一件特殊事件。",
+                    const Text("点添加按钮安排事件。",
                         style: TextStyle(color: Colors.grey)),
                   ],
                 ),
