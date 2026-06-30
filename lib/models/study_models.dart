@@ -90,6 +90,34 @@ class HomeworkItem {
       );
 }
 
+class TodoItem {
+  String id;
+  String content;
+  bool isDone;
+  String createdAt;
+
+  TodoItem({
+    required this.id,
+    required this.content,
+    this.isDone = false,
+    required this.createdAt,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'content': content,
+        'isDone': isDone,
+        'createdAt': createdAt,
+      };
+
+  factory TodoItem.fromJson(Map<String, dynamic> json) => TodoItem(
+        id: json['id'],
+        content: json['content'],
+        isDone: json['isDone'] ?? false,
+        createdAt: json['createdAt'] ?? '',
+      );
+}
+
 class SubjectHomework {
   String subject;
   String icon;

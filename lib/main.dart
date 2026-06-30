@@ -26,6 +26,7 @@ class AppState extends ChangeNotifier {
   List<ScheduleItem> _schedule = [];
   List<SubjectHomework> _homeworks = [];
   List<DailyLog> _logs = [];
+  List<TodoItem> _todos = [];
 
   List<String> _undoStack = [];
   List<String> _redoStack = [];
@@ -33,6 +34,10 @@ class AppState extends ChangeNotifier {
   List<ScheduleItem> get schedule => _schedule;
   List<SubjectHomework> get homeworks => _homeworks;
   List<DailyLog> get logs => _logs;
+  List<TodoItem> get todos => _todos;
+
+  int get pendingTodoCount => _todos.where((todo) => !todo.isDone).length;
+  int get completedTodoCount => _todos.where((todo) => todo.isDone).length;
 
   bool get canUndo => _undoStack.isNotEmpty;
   bool get canRedo => _redoStack.isNotEmpty;
@@ -177,6 +182,12 @@ class AppState extends ChangeNotifier {
       Iterable l = json.decode(savedLogs);
       _logs = List<DailyLog>.from(l.map((x) => DailyLog.fromJson(x)));
     }
+
+    final savedTodos = await _storage.read(StorageService.todosKey);
+    if (savedTodos != null) {
+      Iterable l = json.decode(savedTodos);
+      _todos = List<TodoItem>.from(l.map((x) => TodoItem.fromJson(x)));
+    }
     notifyListeners();
   }
 
@@ -184,7 +195,8 @@ class AppState extends ChangeNotifier {
     String snapshot = json.encode({
       'schedule': json.encode(_schedule),
       'homeworks': json.encode(_homeworks),
-      'logs': json.encode(_logs)
+      'logs': json.encode(_logs),
+      'todos': json.encode(_todos)
     });
     _undoStack.add(snapshot);
     if (_undoStack.length > 20) _undoStack.removeAt(0);
@@ -195,6 +207,7 @@ class AppState extends ChangeNotifier {
     await _storage.write(StorageService.scheduleKey, json.encode(_schedule));
     await _storage.write(StorageService.homeworkKey, json.encode(_homeworks));
     await _storage.write(StorageService.logsKey, json.encode(_logs));
+    await _storage.write(StorageService.todosKey, json.encode(_todos));
     notifyListeners();
   }
 
@@ -248,6 +261,41 @@ class AppState extends ChangeNotifier {
     _persist();
   }
 
+  void addTodoItem(String content) {
+    final trimmed = content.trim();
+    if (trimmed.isEmpty) return;
+    _saveSnapshot();
+    _todos.insert(
+      0,
+      TodoItem(
+        id: DateTime.now().microsecondsSinceEpoch.toString(),
+        content: trimmed,
+        createdAt: DateTime.now().toIso8601String(),
+      ),
+    );
+    _persist();
+  }
+
+  void toggleTodoItem(String itemId) {
+    _saveSnapshot();
+    final item = _todos.firstWhere((todo) => todo.id == itemId);
+    item.isDone = !item.isDone;
+    _persist();
+  }
+
+  void deleteTodoItem(String itemId) {
+    _saveSnapshot();
+    _todos.removeWhere((todo) => todo.id == itemId);
+    _persist();
+  }
+
+  void clearCompletedTodos() {
+    if (_todos.every((todo) => !todo.isDone)) return;
+    _saveSnapshot();
+    _todos.removeWhere((todo) => todo.isDone);
+    _persist();
+  }
+
   void deleteScheduleItem(String itemId) {
     _saveSnapshot();
     _schedule.removeWhere((item) => item.id == itemId);
@@ -274,7 +322,8 @@ class AppState extends ChangeNotifier {
     _redoStack.add(json.encode({
       'schedule': json.encode(_schedule),
       'homeworks': json.encode(_homeworks),
-      'logs': json.encode(_logs)
+      'logs': json.encode(_logs),
+      'todos': json.encode(_todos)
     }));
     _restore(_undoStack.removeLast());
   }
@@ -284,7 +333,8 @@ class AppState extends ChangeNotifier {
     _undoStack.add(json.encode({
       'schedule': json.encode(_schedule),
       'homeworks': json.encode(_homeworks),
-      'logs': json.encode(_logs)
+      'logs': json.encode(_logs),
+      'todos': json.encode(_todos)
     }));
     _restore(_redoStack.removeLast());
   }
@@ -298,6 +348,12 @@ class AppState extends ChangeNotifier {
             .map((x) => SubjectHomework.fromJson(x)));
     _logs = List<DailyLog>.from(
         (json.decode(map['logs']) as List).map((x) => DailyLog.fromJson(x)));
+    if (map['todos'] != null) {
+      _todos = List<TodoItem>.from(
+          (json.decode(map['todos']) as List).map((x) => TodoItem.fromJson(x)));
+    } else {
+      _todos = [];
+    }
     _persist();
   }
 
@@ -313,7 +369,8 @@ class AppState extends ChangeNotifier {
       final jsonStr = json.encode({
         'schedule': json.encode(_schedule),
         'homeworks': json.encode(_homeworks),
-        'logs': json.encode(_logs)
+        'logs': json.encode(_logs),
+        'todos': json.encode(_todos)
       });
       final directory = await getTemporaryDirectory();
       final file = File(
@@ -341,6 +398,10 @@ class AppState extends ChangeNotifier {
                 .map((x) => SubjectHomework.fromJson(x)));
         _logs = List<DailyLog>.from((json.decode(map['logs']) as List)
             .map((x) => DailyLog.fromJson(x)));
+        if (map['todos'] != null) {
+          _todos = List<TodoItem>.from((json.decode(map['todos']) as List)
+              .map((x) => TodoItem.fromJson(x)));
+        }
         _persist();
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text("数据恢复成功！")));
@@ -412,6 +473,7 @@ class _MainScreenState extends State<MainScreen> {
     const DashboardTab(),
     const ScheduleTab(),
     const HomeworkTab(),
+    const TodoTab(),
     const SettingsTab()
   ];
 
@@ -447,6 +509,10 @@ class _MainScreenState extends State<MainScreen> {
                 icon: Icon(Icons.checklist_outlined),
                 selectedIcon: Icon(Icons.checklist, color: Color(0xFF007AFF)),
                 label: '作业'),
+            NavigationDestination(
+                icon: Icon(Icons.task_alt_outlined),
+                selectedIcon: Icon(Icons.task_alt, color: Color(0xFF007AFF)),
+                label: '待办'),
             NavigationDestination(
                 icon: Icon(Icons.settings_outlined),
                 selectedIcon: Icon(Icons.settings, color: Color(0xFF007AFF)),
@@ -1132,6 +1198,182 @@ class HomeworkTab extends StatelessWidget {
                         const Text("删除", style: TextStyle(color: Colors.red))),
               ],
             ));
+  }
+}
+
+class TodoTab extends StatefulWidget {
+  const TodoTab({super.key});
+
+  @override
+  State<TodoTab> createState() => _TodoTabState();
+}
+
+class _TodoTabState extends State<TodoTab> {
+  final TextEditingController _controller = TextEditingController();
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final state = context.watch<AppState>();
+    final pending = state.todos.where((todo) => !todo.isDone).toList();
+    final completed = state.todos.where((todo) => todo.isDone).toList();
+
+    return Scaffold(
+      backgroundColor: const Color(0xFFF5F5F7),
+      appBar: AppBar(
+        title: const Text("今日待办"),
+        actions: [
+          if (completed.isNotEmpty)
+            IconButton(
+              tooltip: "清除已完成",
+              icon: const Icon(Icons.cleaning_services_outlined),
+              onPressed: () => context.read<AppState>().clearCompletedTodos(),
+            ),
+        ],
+      ),
+      body: ListView(
+        padding: const EdgeInsets.all(16),
+        children: [
+          Card(
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    "${state.pendingTodoCount} 个待完成 · ${state.completedTodoCount} 个已完成",
+                    style: const TextStyle(
+                      fontSize: 13,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: _controller,
+                          textInputAction: TextInputAction.done,
+                          decoration: InputDecoration(
+                            hintText: "写下一个要完成的事",
+                            filled: true,
+                            fillColor: const Color(0xFFF5F5F7),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                              borderSide: BorderSide.none,
+                            ),
+                            contentPadding: const EdgeInsets.symmetric(
+                                horizontal: 14, vertical: 12),
+                          ),
+                          onSubmitted: (_) => _addTodo(context),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      IconButton.filled(
+                        tooltip: "添加",
+                        icon: const Icon(Icons.add),
+                        onPressed: () => _addTodo(context),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          if (state.todos.isEmpty)
+            Card(
+              child: Padding(
+                padding: const EdgeInsets.all(28),
+                child: Column(
+                  children: [
+                    Icon(Icons.task_alt,
+                        color: Colors.grey.withValues(alpha: 0.45), size: 48),
+                    const SizedBox(height: 12),
+                    const Text("还没有待办",
+                        style: TextStyle(
+                            fontSize: 18, fontWeight: FontWeight.bold)),
+                    const SizedBox(height: 6),
+                    const Text("在上方输入一件事，然后点加号。",
+                        style: TextStyle(color: Colors.grey)),
+                  ],
+                ),
+              ),
+            )
+          else ...[
+            if (pending.isNotEmpty) ...[
+              _sectionTitle("待完成"),
+              ...pending.map((todo) => _todoTile(context, todo)),
+            ],
+            if (completed.isNotEmpty) ...[
+              const SizedBox(height: 8),
+              _sectionTitle("已完成"),
+              ...completed.map((todo) => _todoTile(context, todo)),
+            ],
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _sectionTitle(String title) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(4, 4, 4, 8),
+      child: Text(title,
+          style: const TextStyle(
+              color: Colors.grey, fontSize: 13, fontWeight: FontWeight.bold)),
+    );
+  }
+
+  Widget _todoTile(BuildContext context, TodoItem todo) {
+    return Dismissible(
+      key: ValueKey(todo.id),
+      direction: DismissDirection.endToStart,
+      background: Container(
+        margin: const EdgeInsets.only(bottom: 10),
+        padding: const EdgeInsets.only(right: 20),
+        alignment: Alignment.centerRight,
+        decoration: BoxDecoration(
+          color: Colors.red,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: const Icon(Icons.delete, color: Colors.white),
+      ),
+      onDismissed: (_) => context.read<AppState>().deleteTodoItem(todo.id),
+      child: Card(
+        margin: const EdgeInsets.only(bottom: 10),
+        child: CheckboxListTile(
+          value: todo.isDone,
+          activeColor: const Color(0xFF007AFF),
+          onChanged: (_) => context.read<AppState>().toggleTodoItem(todo.id),
+          title: Text(
+            todo.content,
+            style: TextStyle(
+              fontSize: 16,
+              decoration: todo.isDone ? TextDecoration.lineThrough : null,
+              color: todo.isDone ? Colors.grey : Colors.black,
+            ),
+          ),
+          secondary: IconButton(
+            tooltip: "删除",
+            icon: const Icon(Icons.close, color: Colors.grey, size: 20),
+            onPressed: () => context.read<AppState>().deleteTodoItem(todo.id),
+          ),
+          controlAffinity: ListTileControlAffinity.leading,
+        ),
+      ),
+    );
+  }
+
+  void _addTodo(BuildContext context) {
+    context.read<AppState>().addTodoItem(_controller.text);
+    _controller.clear();
   }
 }
 
