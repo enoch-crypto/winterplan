@@ -146,6 +146,39 @@ class CalendarEvent {
       );
 }
 
+class FavoritePersona {
+  String id;
+  String date;
+  String personaId;
+  String title;
+  String note;
+
+  FavoritePersona({
+    required this.id,
+    required this.date,
+    required this.personaId,
+    required this.title,
+    required this.note,
+  });
+
+  Map<String, dynamic> toJson() => {
+        'id': id,
+        'date': date,
+        'personaId': personaId,
+        'title': title,
+        'note': note,
+      };
+
+  factory FavoritePersona.fromJson(Map<String, dynamic> json) =>
+      FavoritePersona(
+        id: json['id'],
+        date: json['date'],
+        personaId: json['personaId'],
+        title: json['title'],
+        note: json['note'] ?? '',
+      );
+}
+
 class SubjectHomework {
   String subject;
   String icon;

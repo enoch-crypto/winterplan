@@ -28,6 +28,7 @@ class AppState extends ChangeNotifier {
   List<DailyLog> _logs = [];
   List<TodoItem> _todos = [];
   List<CalendarEvent> _events = [];
+  List<FavoritePersona> _favoritePersonas = [];
 
   List<String> _undoStack = [];
   List<String> _redoStack = [];
@@ -37,6 +38,7 @@ class AppState extends ChangeNotifier {
   List<DailyLog> get logs => _logs;
   List<TodoItem> get todos => _todos;
   List<CalendarEvent> get events => _events;
+  List<FavoritePersona> get favoritePersonas => _favoritePersonas;
 
   int get pendingTodoCount => _todos.where((todo) => !todo.isDone).length;
   int get completedTodoCount => _todos.where((todo) => todo.isDone).length;
@@ -45,6 +47,9 @@ class AppState extends ChangeNotifier {
     final key = DateFormat('yyyy-MM-dd').format(date);
     return _events.where((event) => event.date == key).toList();
   }
+
+  bool isPersonaFavorited(String personaId) =>
+      _favoritePersonas.any((item) => item.personaId == personaId);
 
   bool get canUndo => _undoStack.isNotEmpty;
   bool get canRedo => _redoStack.isNotEmpty;
@@ -179,6 +184,14 @@ class AppState extends ChangeNotifier {
       _events =
           List<CalendarEvent>.from(l.map((x) => CalendarEvent.fromJson(x)));
     }
+
+    final savedFavoritePersonas =
+        await _storage.read(StorageService.favoritePersonasKey);
+    if (savedFavoritePersonas != null) {
+      Iterable l = json.decode(savedFavoritePersonas);
+      _favoritePersonas =
+          List<FavoritePersona>.from(l.map((x) => FavoritePersona.fromJson(x)));
+    }
     notifyListeners();
   }
 
@@ -188,7 +201,8 @@ class AppState extends ChangeNotifier {
       'homeworks': json.encode(_homeworks),
       'logs': json.encode(_logs),
       'todos': json.encode(_todos),
-      'events': json.encode(_events)
+      'events': json.encode(_events),
+      'favoritePersonas': json.encode(_favoritePersonas)
     });
     _undoStack.add(snapshot);
     if (_undoStack.length > 20) _undoStack.removeAt(0);
@@ -201,6 +215,8 @@ class AppState extends ChangeNotifier {
     await _storage.write(StorageService.logsKey, json.encode(_logs));
     await _storage.write(StorageService.todosKey, json.encode(_todos));
     await _storage.write(StorageService.eventsKey, json.encode(_events));
+    await _storage.write(
+        StorageService.favoritePersonasKey, json.encode(_favoritePersonas));
     notifyListeners();
   }
 
@@ -309,6 +325,24 @@ class AppState extends ChangeNotifier {
     _persist();
   }
 
+  void toggleFavoritePersona(String personaId, String title, String note) {
+    _saveSnapshot();
+    final existing =
+        _favoritePersonas.indexWhere((item) => item.personaId == personaId);
+    if (existing >= 0) {
+      _favoritePersonas.removeAt(existing);
+    } else {
+      _favoritePersonas.add(FavoritePersona(
+        id: DateTime.now().microsecondsSinceEpoch.toString(),
+        date: DateFormat('yyyy-MM-dd').format(DateTime.now()),
+        personaId: personaId,
+        title: title,
+        note: note,
+      ));
+    }
+    _persist();
+  }
+
   void deleteScheduleItem(String itemId) {
     _saveSnapshot();
     _schedule.removeWhere((item) => item.id == itemId);
@@ -337,7 +371,8 @@ class AppState extends ChangeNotifier {
       'homeworks': json.encode(_homeworks),
       'logs': json.encode(_logs),
       'todos': json.encode(_todos),
-      'events': json.encode(_events)
+      'events': json.encode(_events),
+      'favoritePersonas': json.encode(_favoritePersonas)
     }));
     _restore(_undoStack.removeLast());
   }
@@ -349,7 +384,8 @@ class AppState extends ChangeNotifier {
       'homeworks': json.encode(_homeworks),
       'logs': json.encode(_logs),
       'todos': json.encode(_todos),
-      'events': json.encode(_events)
+      'events': json.encode(_events),
+      'favoritePersonas': json.encode(_favoritePersonas)
     }));
     _restore(_redoStack.removeLast());
   }
@@ -375,6 +411,13 @@ class AppState extends ChangeNotifier {
     } else {
       _events = [];
     }
+    if (map['favoritePersonas'] != null) {
+      _favoritePersonas = List<FavoritePersona>.from(
+          (json.decode(map['favoritePersonas']) as List)
+              .map((x) => FavoritePersona.fromJson(x)));
+    } else {
+      _favoritePersonas = [];
+    }
     _persist();
   }
 
@@ -392,7 +435,8 @@ class AppState extends ChangeNotifier {
         'homeworks': json.encode(_homeworks),
         'logs': json.encode(_logs),
         'todos': json.encode(_todos),
-        'events': json.encode(_events)
+        'events': json.encode(_events),
+        'favoritePersonas': json.encode(_favoritePersonas)
       });
       final directory = await getTemporaryDirectory();
       final file = File(
@@ -429,6 +473,11 @@ class AppState extends ChangeNotifier {
               (json.decode(map['events']) as List)
                   .map((x) => CalendarEvent.fromJson(x)));
         }
+        if (map['favoritePersonas'] != null) {
+          _favoritePersonas = List<FavoritePersona>.from(
+              (json.decode(map['favoritePersonas']) as List)
+                  .map((x) => FavoritePersona.fromJson(x)));
+        }
         _persist();
         ScaffoldMessenger.of(context)
             .showSnackBar(const SnackBar(content: Text("数据恢复成功！")));
@@ -443,6 +492,95 @@ class AppState extends ChangeNotifier {
 // ==========================================
 // 3. UI 主入口
 // ==========================================
+
+const _spaceBackground = Color(0xFF11131A);
+const _spacePanel = Color(0xFF1A1E28);
+const _spaceAmber = Color(0xFFE2B45B);
+const _spaceRed = Color(0xFF9B3030);
+const _armorWhite = Color(0xFFE8E3D8);
+
+class SpacePersona {
+  final String id;
+  final String title;
+  final String subtitle;
+  final String eraLabel;
+  final Color armorColor;
+  final Color accentColor;
+  final Color visorColor;
+
+  const SpacePersona({
+    required this.id,
+    required this.title,
+    required this.subtitle,
+    required this.eraLabel,
+    required this.armorColor,
+    required this.accentColor,
+    required this.visorColor,
+  });
+}
+
+const _dailyPersonas = [
+  SpacePersona(
+    id: 'phase-line-captain',
+    title: '相位线队长',
+    subtitle: '适合把今天拆成清晰步骤，稳稳推进。',
+    eraLabel: '前传感 / 白甲军团',
+    armorColor: _armorWhite,
+    accentColor: _spaceRed,
+    visorColor: Color(0xFF20242C),
+  ),
+  SpacePersona(
+    id: 'outer-rim-scout',
+    title: '外环侦察员',
+    subtitle: '适合探索新任务，先观察，再行动。',
+    eraLabel: '前传感 / 沙地巡逻',
+    armorColor: Color(0xFFD7C29A),
+    accentColor: Color(0xFF6E7F58),
+    visorColor: Color(0xFF1C2322),
+  ),
+  SpacePersona(
+    id: 'void-deck-trooper',
+    title: '星舰甲板兵',
+    subtitle: '适合处理杂事、整理空间、保持秩序。',
+    eraLabel: '正传感 / 星舰值守',
+    armorColor: Color(0xFFDDE1E7),
+    accentColor: Color(0xFF4A4F58),
+    visorColor: Color(0xFF111318),
+  ),
+  SpacePersona(
+    id: 'twin-sun-guard',
+    title: '双日守卫',
+    subtitle: '适合长时间专注，慢一点也没关系。',
+    eraLabel: '正传感 / 荒漠基地',
+    armorColor: Color(0xFFE7D6B5),
+    accentColor: Color(0xFFB56A35),
+    visorColor: Color(0xFF26201A),
+  ),
+  SpacePersona(
+    id: 'red-stripe-vanguard',
+    title: '红纹先锋',
+    subtitle: '适合开局困难的一天，用第一步破局。',
+    eraLabel: '前传感 / 突击小队',
+    armorColor: _armorWhite,
+    accentColor: Color(0xFFC14137),
+    visorColor: Color(0xFF22252B),
+  ),
+  SpacePersona(
+    id: 'black-bridge-officer',
+    title: '黑桥指挥官',
+    subtitle: '适合做计划、排优先级、压住节奏。',
+    eraLabel: '正传感 / 冷色舰桥',
+    armorColor: Color(0xFF2E333D),
+    accentColor: _spaceAmber,
+    visorColor: Color(0xFF0B0C10),
+  ),
+];
+
+SpacePersona _personaForDate(DateTime date) {
+  final day = DateTime(date.year, date.month, date.day);
+  final days = day.difference(DateTime(2026, 1, 1)).inDays.abs();
+  return _dailyPersonas[days % _dailyPersonas.length];
+}
 
 void main() {
   runApp(
@@ -511,43 +649,42 @@ class _MainScreenState extends State<MainScreen> {
       body: IndexedStack(index: _idx, children: _pages),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: _spacePanel,
           border: Border(
               top: BorderSide(
-                  color: Colors.grey.withValues(alpha: 0.2), width: 0.5)),
+                  color: Colors.white.withValues(alpha: 0.08), width: 0.5)),
         ),
         child: NavigationBar(
           selectedIndex: _idx,
-          backgroundColor: Colors.white,
-          indicatorColor: const Color(0xFF007AFF).withValues(alpha: 0.1),
+          backgroundColor: _spacePanel,
+          indicatorColor: _spaceAmber.withValues(alpha: 0.16),
           height: 65,
           elevation: 0,
           onDestinationSelected: (i) => setState(() => _idx = i),
           destinations: const [
             NavigationDestination(
                 icon: Icon(Icons.analytics_outlined),
-                selectedIcon: Icon(Icons.analytics, color: Color(0xFF007AFF)),
+                selectedIcon: Icon(Icons.analytics, color: _spaceAmber),
                 label: '战况'),
             NavigationDestination(
                 icon: Icon(Icons.calendar_today_outlined),
-                selectedIcon:
-                    Icon(Icons.calendar_today, color: Color(0xFF007AFF)),
+                selectedIcon: Icon(Icons.calendar_today, color: _spaceAmber),
                 label: '日程'),
             NavigationDestination(
                 icon: Icon(Icons.event_note_outlined),
-                selectedIcon: Icon(Icons.event_note, color: Color(0xFF007AFF)),
+                selectedIcon: Icon(Icons.event_note, color: _spaceAmber),
                 label: '月历'),
             NavigationDestination(
                 icon: Icon(Icons.checklist_outlined),
-                selectedIcon: Icon(Icons.checklist, color: Color(0xFF007AFF)),
+                selectedIcon: Icon(Icons.checklist, color: _spaceAmber),
                 label: '事项'),
             NavigationDestination(
                 icon: Icon(Icons.task_alt_outlined),
-                selectedIcon: Icon(Icons.task_alt, color: Color(0xFF007AFF)),
+                selectedIcon: Icon(Icons.task_alt, color: _spaceAmber),
                 label: '待办'),
             NavigationDestination(
                 icon: Icon(Icons.settings_outlined),
-                selectedIcon: Icon(Icons.settings, color: Color(0xFF007AFF)),
+                selectedIcon: Icon(Icons.settings, color: _spaceAmber),
                 label: '设置'),
           ],
         ),
@@ -933,119 +1070,38 @@ class ScheduleTab extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
+    final now = DateTime.now();
+    final persona = _personaForDate(now);
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F7),
-      appBar: AppBar(title: const Text("每日日程表")),
-      body: ListView.separated(
+      backgroundColor: _spaceBackground,
+      appBar: AppBar(
+        title: const Text("每日任务"),
+        backgroundColor: _spaceBackground,
+        titleTextStyle: const TextStyle(
+            color: _armorWhite, fontWeight: FontWeight.bold, fontSize: 18),
+        iconTheme: const IconThemeData(color: _armorWhite),
+      ),
+      body: ListView(
         padding: const EdgeInsets.all(16),
-        itemCount: state.schedule.length,
-        separatorBuilder: (_, __) => const SizedBox(height: 12),
-        itemBuilder: (ctx, i) {
-          final item = state.schedule[i];
-          final now = DateTime.now();
-          final start = item.getStartTime(now);
-          final end = item.getEndTime(now);
-          bool isCurrent = false;
-          if (start != null && end != null) {
-            if (now.isAfter(start) && now.isBefore(end)) isCurrent = true;
-          }
-          return InkWell(
-            onTap: () => _showEditScheduleDialog(context, item),
-            child: Container(
-              padding: const EdgeInsets.all(16),
-              decoration: BoxDecoration(
-                color: isCurrent ? const Color(0xFF007AFF) : Colors.white,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: isCurrent
-                    ? [
-                        BoxShadow(
-                            color: Colors.blue.withValues(alpha: 0.4),
-                            blurRadius: 10,
-                            offset: const Offset(0, 4))
-                      ]
-                    : [],
-              ),
-              child: Row(
-                children: [
-                  Container(
-                    width: 50,
-                    height: 50,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                        color: isCurrent
-                            ? Colors.white.withValues(alpha: 0.2)
-                            : const Color(0xFFF2F2F7),
-                        borderRadius: BorderRadius.circular(12)),
-                    child:
-                        Text(item.icon, style: const TextStyle(fontSize: 24)),
-                  ),
-                  const SizedBox(width: 16),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          children: [
-                            Text(item.timeRange,
-                                style: TextStyle(
-                                    color: isCurrent
-                                        ? Colors.white70
-                                        : Colors.grey,
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13)),
-                            const Spacer(),
-                            if (item.tag.isNotEmpty)
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 6, vertical: 2),
-                                decoration: BoxDecoration(
-                                    color: isCurrent
-                                        ? Colors.white24
-                                        : Colors.red.withValues(alpha: 0.1),
-                                    borderRadius: BorderRadius.circular(4)),
-                                child: Text(item.tag,
-                                    style: TextStyle(
-                                        fontSize: 10,
-                                        color: isCurrent
-                                            ? Colors.white
-                                            : Colors.red)),
-                              )
-                          ],
-                        ),
-                        const SizedBox(height: 4),
-                        Text(item.title,
-                            style: TextStyle(
-                                color: isCurrent ? Colors.white : Colors.black,
-                                fontWeight: FontWeight.bold,
-                                fontSize: 17)),
-                        Text(item.content,
-                            style: TextStyle(
-                                color: isCurrent ? Colors.white70 : Colors.grey,
-                                fontSize: 13),
-                            maxLines: 1,
-                            overflow: TextOverflow.ellipsis),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  IconButton(
-                    icon: Icon(Icons.play_circle_fill,
-                        size: 40,
-                        color:
-                            isCurrent ? Colors.white : const Color(0xFF007AFF)),
-                    onPressed: () => Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (_) => TimerPage(item: item))),
-                  )
-                ],
-              ),
+        children: [
+          _DailyPersonaCard(
+            persona: persona,
+            isFavorited: state.isPersonaFavorited(persona.id),
+          ),
+          const SizedBox(height: 16),
+          for (var i = 0; i < state.schedule.length; i++) ...[
+            _ScheduleSpaceCard(
+              item: state.schedule[i],
+              now: now,
+              persona: persona,
+              onEdit: () => _showEditScheduleDialog(context, state.schedule[i]),
             ),
-          );
-        },
+            if (i != state.schedule.length - 1) const SizedBox(height: 12),
+          ],
+        ],
       ),
       floatingActionButton: FloatingActionButton(
-        backgroundColor: const Color(0xFF007AFF),
+        backgroundColor: _spaceAmber,
         child: const Icon(Icons.add, color: Colors.white),
         onPressed: () => _showEditScheduleDialog(context, null),
       ),
@@ -1137,6 +1193,327 @@ class ScheduleTab extends StatelessWidget {
               ],
             ));
   }
+}
+
+class _DailyPersonaCard extends StatelessWidget {
+  final SpacePersona persona;
+  final bool isFavorited;
+
+  const _DailyPersonaCard({
+    required this.persona,
+    required this.isFavorited,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 190,
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [
+            const Color(0xFF242833),
+            persona.accentColor.withValues(alpha: 0.55),
+            const Color(0xFF08090D),
+          ],
+        ),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _StarFieldPainter(accentColor: persona.accentColor),
+            ),
+          ),
+          Positioned(
+            right: 8,
+            bottom: 0,
+            top: 18,
+            width: 140,
+            child: CustomPaint(
+              painter: _PersonaPainter(persona: persona),
+            ),
+          ),
+          Positioned(
+            left: 18,
+            top: 18,
+            right: 128,
+            bottom: 18,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  persona.eraLabel,
+                  style: const TextStyle(
+                    color: _spaceAmber,
+                    fontSize: 11,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  persona.title,
+                  style: const TextStyle(
+                    color: _armorWhite,
+                    fontSize: 24,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  persona.subtitle,
+                  style: const TextStyle(
+                    color: Colors.white70,
+                    fontSize: 13,
+                    height: 1.35,
+                  ),
+                ),
+                const Spacer(),
+                FilledButton.icon(
+                  style: FilledButton.styleFrom(
+                    backgroundColor: isFavorited ? _spaceAmber : Colors.white12,
+                    foregroundColor:
+                        isFavorited ? const Color(0xFF181818) : _armorWhite,
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                  ),
+                  onPressed: () {
+                    context.read<AppState>().toggleFavoritePersona(
+                          persona.id,
+                          persona.title,
+                          persona.subtitle,
+                        );
+                  },
+                  icon: Icon(
+                    isFavorited ? Icons.bookmark : Icons.bookmark_border,
+                    size: 18,
+                  ),
+                  label: Text(isFavorited ? "已记录" : "记录这个形象"),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ScheduleSpaceCard extends StatelessWidget {
+  final ScheduleItem item;
+  final DateTime now;
+  final SpacePersona persona;
+  final VoidCallback onEdit;
+
+  const _ScheduleSpaceCard({
+    required this.item,
+    required this.now,
+    required this.persona,
+    required this.onEdit,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    final start = item.getStartTime(now);
+    final end = item.getEndTime(now);
+    final isCurrent =
+        start != null && end != null && now.isAfter(start) && now.isBefore(end);
+
+    return InkWell(
+      onTap: onEdit,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: isCurrent ? persona.accentColor : _spacePanel,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+              color: isCurrent
+                  ? _spaceAmber.withValues(alpha: 0.7)
+                  : Colors.white.withValues(alpha: 0.08)),
+          boxShadow: isCurrent
+              ? [
+                  BoxShadow(
+                      color: persona.accentColor.withValues(alpha: 0.35),
+                      blurRadius: 14,
+                      offset: const Offset(0, 4))
+                ]
+              : [],
+        ),
+        child: Row(
+          children: [
+            Container(
+              width: 50,
+              height: 50,
+              alignment: Alignment.center,
+              decoration: BoxDecoration(
+                  color: isCurrent
+                      ? Colors.white.withValues(alpha: 0.2)
+                      : Colors.white.withValues(alpha: 0.08),
+                  borderRadius: BorderRadius.circular(10)),
+              child: Text(item.icon, style: const TextStyle(fontSize: 24)),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Text(item.timeRange,
+                          style: TextStyle(
+                              color:
+                                  isCurrent ? Colors.white70 : Colors.white54,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13)),
+                      const Spacer(),
+                      if (item.tag.isNotEmpty)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                              color: isCurrent
+                                  ? Colors.white24
+                                  : persona.accentColor.withValues(alpha: 0.18),
+                              borderRadius: BorderRadius.circular(4)),
+                          child: Text(item.tag,
+                              style: TextStyle(
+                                  fontSize: 10,
+                                  color: isCurrent
+                                      ? Colors.white
+                                      : persona.accentColor)),
+                        )
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(item.title,
+                      style: TextStyle(
+                          color: isCurrent ? Colors.white : _armorWhite,
+                          fontWeight: FontWeight.bold,
+                          fontSize: 17)),
+                  Text(item.content,
+                      style: TextStyle(
+                          color: isCurrent ? Colors.white70 : Colors.white60,
+                          fontSize: 13),
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis),
+                ],
+              ),
+            ),
+            const SizedBox(width: 8),
+            IconButton(
+              icon: Icon(Icons.play_circle_fill,
+                  size: 40, color: isCurrent ? Colors.white : _spaceAmber),
+              onPressed: () => Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => TimerPage(item: item))),
+            )
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _StarFieldPainter extends CustomPainter {
+  final Color accentColor;
+
+  _StarFieldPainter({required this.accentColor});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final starPaint = Paint()..color = Colors.white.withValues(alpha: 0.5);
+    final accentPaint = Paint()..color = accentColor.withValues(alpha: 0.35);
+    for (var i = 0; i < 34; i++) {
+      final x = (i * 47 % size.width.toInt()).toDouble();
+      final y = (i * 29 % size.height.toInt()).toDouble();
+      canvas.drawCircle(Offset(x, y), i % 5 == 0 ? 1.6 : 0.9, starPaint);
+    }
+    canvas.drawCircle(Offset(size.width * 0.12, size.height * 0.18), 18,
+        accentPaint..color = _spaceAmber.withValues(alpha: 0.2));
+    canvas.drawCircle(Offset(size.width * 0.24, size.height * 0.25), 9,
+        accentPaint..color = accentColor.withValues(alpha: 0.24));
+    final linePaint = Paint()
+      ..color = _spaceAmber.withValues(alpha: 0.28)
+      ..strokeWidth = 1.2;
+    canvas.drawLine(Offset(size.width * 0.08, size.height * 0.78),
+        Offset(size.width * 0.74, size.height * 0.58), linePaint);
+  }
+
+  @override
+  bool shouldRepaint(covariant _StarFieldPainter oldDelegate) =>
+      oldDelegate.accentColor != accentColor;
+}
+
+class _PersonaPainter extends CustomPainter {
+  final SpacePersona persona;
+
+  _PersonaPainter({required this.persona});
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final center = Offset(size.width * 0.5, size.height * 0.42);
+    final armor = Paint()..color = persona.armorColor;
+    final accent = Paint()..color = persona.accentColor;
+    final shadow = Paint()..color = Colors.black.withValues(alpha: 0.3);
+    final visor = Paint()..color = persona.visorColor;
+
+    canvas.drawOval(
+        Rect.fromCenter(
+            center: Offset(center.dx, size.height * 0.92),
+            width: size.width * 0.82,
+            height: size.height * 0.18),
+        shadow);
+
+    final body = RRect.fromRectAndRadius(
+      Rect.fromLTWH(size.width * 0.16, size.height * 0.58, size.width * 0.68,
+          size.height * 0.36),
+      const Radius.circular(18),
+    );
+    canvas.drawRRect(body, armor);
+    canvas.drawRect(
+        Rect.fromLTWH(size.width * 0.45, size.height * 0.58, size.width * 0.1,
+            size.height * 0.35),
+        accent);
+
+    final helmet = RRect.fromRectAndRadius(
+      Rect.fromLTWH(size.width * 0.22, size.height * 0.12, size.width * 0.56,
+          size.height * 0.46),
+      const Radius.circular(24),
+    );
+    canvas.drawRRect(helmet, armor);
+    canvas.drawPath(
+      Path()
+        ..moveTo(size.width * 0.28, size.height * 0.28)
+        ..lineTo(size.width * 0.72, size.height * 0.28)
+        ..lineTo(size.width * 0.64, size.height * 0.38)
+        ..lineTo(size.width * 0.36, size.height * 0.38)
+        ..close(),
+      visor,
+    );
+    canvas.drawPath(
+      Path()
+        ..moveTo(size.width * 0.5, size.height * 0.39)
+        ..lineTo(size.width * 0.61, size.height * 0.54)
+        ..lineTo(size.width * 0.39, size.height * 0.54)
+        ..close(),
+      accent,
+    );
+    canvas.drawRect(
+        Rect.fromLTWH(size.width * 0.32, size.height * 0.18, size.width * 0.36,
+            size.height * 0.05),
+        accent);
+    canvas.drawCircle(
+        Offset(size.width * 0.2, size.height * 0.5), size.width * 0.06, armor);
+    canvas.drawCircle(
+        Offset(size.width * 0.8, size.height * 0.5), size.width * 0.06, armor);
+  }
+
+  @override
+  bool shouldRepaint(covariant _PersonaPainter oldDelegate) =>
+      oldDelegate.persona.id != persona.id;
 }
 
 class CalendarTab extends StatefulWidget {

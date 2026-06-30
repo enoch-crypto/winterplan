@@ -6,6 +6,7 @@ class StorageService {
   static const logsKey = 'logs_v8';
   static const todosKey = 'todos_v1';
   static const eventsKey = 'calendar_events_v1';
+  static const favoritePersonasKey = 'favorite_personas_v1';
 
   Future<String?> read(String key) async {
     final prefs = await SharedPreferences.getInstance();
@@ -24,5 +25,6 @@ class StorageService {
     await prefs.remove(logsKey);
     await prefs.remove(todosKey);
     await prefs.remove(eventsKey);
+    await prefs.remove(favoritePersonasKey);
   }
 }
