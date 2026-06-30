@@ -1,11 +1,11 @@
 {
-    "name": "enochwinplan",
-    "short_name": "enochwinplan",
+    "name": "Enoch 奇迹化",
+    "short_name": "奇迹化",
     "start_url": ".",
     "display": "standalone",
-    "background_color": "#0175C2",
-    "theme_color": "#0175C2",
-    "description": "A new Flutter project.",
+    "background_color": "#252B36",
+    "theme_color": "#E2B45B",
+    "description": "Enoch 的日常作息与任务打卡应用。",
     "orientation": "portrait-primary",
     "prefer_related_applications": false,
     "icons": [

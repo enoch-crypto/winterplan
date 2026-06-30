@@ -495,6 +495,7 @@ class AppState extends ChangeNotifier {
 
 const _spaceBackground = Color(0xFF11131A);
 const _spacePanel = Color(0xFF1A1E28);
+const _spaceNav = Color(0xFF252B36);
 const _spaceAmber = Color(0xFFE2B45B);
 const _spaceRed = Color(0xFF9B3030);
 const _armorWhite = Color(0xFFE8E3D8);
@@ -597,22 +598,22 @@ class WinterApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: '作息打卡',
+      title: 'Enoch 奇迹化',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.light,
-        scaffoldBackgroundColor: const Color(0xFFF5F5F7),
-        primaryColor: const Color(0xFF007AFF),
-        colorScheme: ColorScheme.fromSeed(seedColor: const Color(0xFF007AFF)),
+        scaffoldBackgroundColor: _spaceBackground,
+        primaryColor: _spaceAmber,
+        colorScheme: ColorScheme.fromSeed(seedColor: _spaceAmber),
         useMaterial3: true,
         textTheme: GoogleFonts.latoTextTheme(),
         appBarTheme: const AppBarTheme(
-          backgroundColor: Colors.white,
+          backgroundColor: _spaceBackground,
           surfaceTintColor: Colors.transparent,
           elevation: 0,
           titleTextStyle: TextStyle(
-              color: Colors.black, fontWeight: FontWeight.bold, fontSize: 18),
-          iconTheme: IconThemeData(color: Colors.black),
+              color: _armorWhite, fontWeight: FontWeight.bold, fontSize: 18),
+          iconTheme: IconThemeData(color: _armorWhite),
         ),
         cardTheme: CardThemeData(
           color: Colors.white,
@@ -649,14 +650,14 @@ class _MainScreenState extends State<MainScreen> {
       body: IndexedStack(index: _idx, children: _pages),
       bottomNavigationBar: Container(
         decoration: BoxDecoration(
-          color: _spacePanel,
+          color: _spaceNav,
           border: Border(
               top: BorderSide(
                   color: Colors.white.withValues(alpha: 0.08), width: 0.5)),
         ),
         child: NavigationBar(
           selectedIndex: _idx,
-          backgroundColor: _spacePanel,
+          backgroundColor: _spaceNav,
           indicatorColor: _spaceAmber.withValues(alpha: 0.16),
           height: 65,
           elevation: 0,
@@ -721,15 +722,15 @@ class DashboardTab extends StatelessWidget {
     }
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F7),
+      backgroundColor: _spaceBackground,
       appBar: AppBar(
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("日常作息打卡",
+            const Text("Enoch 奇迹化",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-            Text("安排、专注、复盘，每天都能微调",
-                style: TextStyle(fontSize: 10, color: Colors.grey[600])),
+            const Text("安排、专注、复盘，每天都能微调",
+                style: TextStyle(fontSize: 10, color: Colors.white60)),
           ],
         ),
         actions: [
@@ -750,6 +751,11 @@ class DashboardTab extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          const _SectorBanner(
+            title: "今日舰桥",
+            subtitle: "把任务排成航线，按优先级推进。",
+            icon: Icons.public,
+          ),
           if (currentItem != null || nextItem != null)
             GestureDetector(
               onTap: () {
@@ -1516,6 +1522,142 @@ class _PersonaPainter extends CustomPainter {
       oldDelegate.persona.id != persona.id;
 }
 
+class _SectorBanner extends StatelessWidget {
+  final String title;
+  final String subtitle;
+  final IconData icon;
+
+  const _SectorBanner({
+    required this.title,
+    required this.subtitle,
+    required this.icon,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      height: 116,
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(14),
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Color(0xFF2D3340), Color(0xFF161A22), Color(0xFF3B2226)],
+        ),
+        border: Border.all(color: Colors.white10),
+      ),
+      child: Stack(
+        children: [
+          Positioned.fill(
+            child: CustomPaint(
+              painter: _FleetBannerPainter(),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: Row(
+              children: [
+                Container(
+                  width: 52,
+                  height: 52,
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.1),
+                    borderRadius: BorderRadius.circular(12),
+                    border:
+                        Border.all(color: _spaceAmber.withValues(alpha: 0.5)),
+                  ),
+                  child: Icon(icon, color: _spaceAmber, size: 28),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        title,
+                        style: const TextStyle(
+                          color: _armorWhite,
+                          fontSize: 20,
+                          fontWeight: FontWeight.w800,
+                        ),
+                      ),
+                      const SizedBox(height: 5),
+                      Text(
+                        subtitle,
+                        style: const TextStyle(
+                          color: Colors.white70,
+                          fontSize: 12,
+                          height: 1.25,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FleetBannerPainter extends CustomPainter {
+  @override
+  void paint(Canvas canvas, Size size) {
+    final star = Paint()..color = Colors.white.withValues(alpha: 0.38);
+    for (var i = 0; i < 26; i++) {
+      final x = (i * 37 % size.width.toInt()).toDouble();
+      final y = (i * 19 % size.height.toInt()).toDouble();
+      canvas.drawCircle(Offset(x, y), i % 6 == 0 ? 1.4 : 0.8, star);
+    }
+
+    final beam = Paint()
+      ..color = _spaceAmber.withValues(alpha: 0.35)
+      ..strokeWidth = 2;
+    canvas.drawLine(Offset(size.width * 0.58, size.height * 0.22),
+        Offset(size.width * 0.96, size.height * 0.1), beam);
+    canvas.drawLine(
+        Offset(size.width * 0.62, size.height * 0.76),
+        Offset(size.width * 0.98, size.height * 0.9),
+        beam..color = _spaceRed.withValues(alpha: 0.45));
+
+    final ship = Paint()..color = _armorWhite.withValues(alpha: 0.78);
+    final dark = Paint()
+      ..color = const Color(0xFF11131A).withValues(alpha: 0.9);
+    final startX = size.width * 0.72;
+    final startY = size.height * 0.48;
+    canvas.drawPath(
+      Path()
+        ..moveTo(startX, startY)
+        ..lineTo(startX + 64, startY - 18)
+        ..lineTo(startX + 52, startY)
+        ..lineTo(startX + 64, startY + 18)
+        ..close(),
+      ship,
+    );
+    canvas.drawRect(Rect.fromLTWH(startX + 22, startY - 4, 26, 8), dark);
+
+    final soldier = Paint()..color = _armorWhite.withValues(alpha: 0.32);
+    for (var i = 0; i < 4; i++) {
+      final dx = size.width * 0.61 + i * 16;
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(dx, size.height * 0.68, 10, 18),
+          const Radius.circular(4),
+        ),
+        soldier,
+      );
+      canvas.drawCircle(Offset(dx + 5, size.height * 0.65), 5, soldier);
+    }
+  }
+
+  @override
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+}
+
 class CalendarTab extends StatefulWidget {
   const CalendarTab({super.key});
 
@@ -1539,11 +1681,16 @@ class _CalendarTabState extends State<CalendarTab> {
     const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F7),
+      backgroundColor: _spaceBackground,
       appBar: AppBar(title: Text(DateFormat('yyyy年M月').format(today))),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          const _SectorBanner(
+            title: "星图月历",
+            subtitle: "特殊安排像坐标一样标记在这个月。",
+            icon: Icons.radar,
+          ),
           Card(
             child: Padding(
               padding: const EdgeInsets.fromLTRB(14, 18, 14, 16),
@@ -1744,69 +1891,81 @@ class HomeworkTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F7),
+      backgroundColor: _spaceBackground,
       appBar: AppBar(title: const Text("日常事项库")),
-      body: ListView.builder(
+      body: ListView(
         padding: const EdgeInsets.all(16),
-        itemCount: state.homeworks.length,
-        itemBuilder: (ctx, i) {
-          final subject = state.homeworks[i];
-          return Card(
-            margin: const EdgeInsets.only(bottom: 16),
-            child: ExpansionTile(
-              shape: const Border(),
-              leading: Text(subject.icon, style: const TextStyle(fontSize: 28)),
-              title: Text(subject.subject,
-                  style: const TextStyle(
-                      fontWeight: FontWeight.bold, fontSize: 18)),
-              subtitle: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const _SectorBanner(
+            title: "补给清单",
+            subtitle: "把长期事项拆成一格一格的可完成任务。",
+            icon: Icons.inventory_2_outlined,
+          ),
+          for (var i = 0; i < state.homeworks.length; i++) ...[
+            Builder(builder: (ctx) {
+              final subject = state.homeworks[i];
+              return Card(
+                margin: const EdgeInsets.only(bottom: 16),
+                child: ExpansionTile(
+                  shape: const Border(),
+                  leading:
+                      Text(subject.icon, style: const TextStyle(fontSize: 28)),
+                  title: Text(subject.subject,
+                      style: const TextStyle(
+                          fontWeight: FontWeight.bold, fontSize: 18)),
+                  subtitle: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        const SizedBox(height: 6),
+                        ClipRRect(
+                            borderRadius: BorderRadius.circular(4),
+                            child: LinearProgressIndicator(
+                                value: subject.progress,
+                                minHeight: 6,
+                                backgroundColor: Colors.grey[200],
+                                color: subject.progress == 1.0
+                                    ? Colors.green
+                                    : const Color(0xFF007AFF))),
+                        const SizedBox(height: 4),
+                        Text("进度: ${(subject.progress * 100).toInt()}%",
+                            style: const TextStyle(
+                                fontSize: 12, color: Colors.grey)),
+                      ]),
                   children: [
-                    const SizedBox(height: 6),
-                    ClipRRect(
-                        borderRadius: BorderRadius.circular(4),
-                        child: LinearProgressIndicator(
-                            value: subject.progress,
-                            minHeight: 6,
-                            backgroundColor: Colors.grey[200],
-                            color: subject.progress == 1.0
-                                ? Colors.green
-                                : const Color(0xFF007AFF))),
-                    const SizedBox(height: 4),
-                    Text("进度: ${(subject.progress * 100).toInt()}%",
-                        style:
-                            const TextStyle(fontSize: 12, color: Colors.grey)),
-                  ]),
-              children: [
-                ...subject.items.map((item) => CheckboxListTile(
-                      title: Text(item.content,
-                          style: TextStyle(
-                              decoration: item.isDone
-                                  ? TextDecoration.lineThrough
-                                  : null,
-                              color: item.isDone ? Colors.grey : Colors.black)),
-                      value: item.isDone,
-                      activeColor: const Color(0xFF007AFF),
-                      onChanged: (val) {
-                        context
-                            .read<AppState>()
-                            .toggleHomeworkItem(subject.subject, item.id);
-                      },
-                      secondary: IconButton(
-                          icon: const Icon(Icons.edit,
-                              size: 16, color: Colors.grey),
-                          onPressed: () =>
-                              _editItem(context, subject.subject, item)),
-                    )),
-                ListTile(
-                    leading: const Icon(Icons.add, color: Color(0xFF007AFF)),
-                    title: const Text("添加新条目...",
-                        style: TextStyle(color: Color(0xFF007AFF))),
-                    onTap: () => _addItem(context, subject.subject))
-              ],
-            ),
-          );
-        },
+                    ...subject.items.map((item) => CheckboxListTile(
+                          title: Text(item.content,
+                              style: TextStyle(
+                                  decoration: item.isDone
+                                      ? TextDecoration.lineThrough
+                                      : null,
+                                  color: item.isDone
+                                      ? Colors.grey
+                                      : Colors.black)),
+                          value: item.isDone,
+                          activeColor: const Color(0xFF007AFF),
+                          onChanged: (val) {
+                            context
+                                .read<AppState>()
+                                .toggleHomeworkItem(subject.subject, item.id);
+                          },
+                          secondary: IconButton(
+                              icon: const Icon(Icons.edit,
+                                  size: 16, color: Colors.grey),
+                              onPressed: () =>
+                                  _editItem(context, subject.subject, item)),
+                        )),
+                    ListTile(
+                        leading:
+                            const Icon(Icons.add, color: Color(0xFF007AFF)),
+                        title: const Text("添加新条目...",
+                            style: TextStyle(color: Color(0xFF007AFF))),
+                        onTap: () => _addItem(context, subject.subject))
+                  ],
+                ),
+              );
+            }),
+          ],
+        ],
       ),
     );
   }
@@ -1883,7 +2042,7 @@ class _TodoTabState extends State<TodoTab> {
     final completed = state.todos.where((todo) => todo.isDone).toList();
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F7),
+      backgroundColor: _spaceBackground,
       appBar: AppBar(
         title: const Text("今日待办"),
         actions: [
@@ -1898,6 +2057,11 @@ class _TodoTabState extends State<TodoTab> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          const _SectorBanner(
+            title: "任务终端",
+            subtitle: "先写下一件事，再把它完成。",
+            icon: Icons.terminal,
+          ),
           Card(
             child: Padding(
               padding: const EdgeInsets.all(16),
@@ -2255,11 +2419,16 @@ class SettingsTab extends StatelessWidget {
   Widget build(BuildContext context) {
     final state = context.watch<AppState>();
     return Scaffold(
-      backgroundColor: const Color(0xFFF5F5F7),
+      backgroundColor: _spaceBackground,
       appBar: AppBar(title: const Text("系统设置")),
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          const _SectorBanner(
+            title: "舰船控制台",
+            subtitle: "管理数据、备份和恢复。",
+            icon: Icons.settings_input_component_outlined,
+          ),
           _buildSectionHeader("数据控制"),
           Card(
               child: Column(children: [
@@ -2327,7 +2496,7 @@ class SettingsTab extends StatelessWidget {
                   })),
           const SizedBox(height: 40),
           const Center(
-              child: Text("Version 1.3.0 (Daily Routine)",
+              child: Text("Version 1.4.1 (Enoch 奇迹化)",
                   style: TextStyle(color: Colors.grey))),
         ],
       ),
