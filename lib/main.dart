@@ -493,12 +493,12 @@ class AppState extends ChangeNotifier {
 // 3. UI 主入口
 // ==========================================
 
-const _spaceBackground = Color(0xFF11131A);
-const _spacePanel = Color(0xFF1A1E28);
-const _spaceNav = Color(0xFF252B36);
-const _spaceAmber = Color(0xFFE2B45B);
-const _spaceRed = Color(0xFF9B3030);
-const _armorWhite = Color(0xFFE8E3D8);
+const _spaceBackground = Color(0xFFF2F5FA);
+const _spacePanel = Color(0xFFFFFFFF);
+const _spaceNav = Color(0xFFE8EEF7);
+const _spaceAmber = Color(0xFFD7A84D);
+const _spaceBlue = Color(0xFF5F86B8);
+const _armorWhite = Color(0xFFF5F1E8);
 
 class SpacePersona {
   final String id;
@@ -527,7 +527,7 @@ const _dailyPersonas = [
     subtitle: '适合把今天拆成清晰步骤，稳稳推进。',
     eraLabel: '前传感 / 白甲军团',
     armorColor: _armorWhite,
-    accentColor: _spaceRed,
+    accentColor: _spaceBlue,
     visorColor: Color(0xFF20242C),
   ),
   SpacePersona(
@@ -536,44 +536,44 @@ const _dailyPersonas = [
     subtitle: '适合探索新任务，先观察，再行动。',
     eraLabel: '前传感 / 沙地巡逻',
     armorColor: Color(0xFFD7C29A),
-    accentColor: Color(0xFF6E7F58),
+    accentColor: Color(0xFFB68C45),
     visorColor: Color(0xFF1C2322),
   ),
   SpacePersona(
     id: 'void-deck-trooper',
     title: '星舰甲板兵',
     subtitle: '适合处理杂事、整理空间、保持秩序。',
-    eraLabel: '正传感 / 星舰值守',
+    eraLabel: '前传感 / 银白星舰',
     armorColor: Color(0xFFDDE1E7),
-    accentColor: Color(0xFF4A4F58),
+    accentColor: Color(0xFF6A8CAF),
     visorColor: Color(0xFF111318),
   ),
   SpacePersona(
     id: 'twin-sun-guard',
     title: '双日守卫',
     subtitle: '适合长时间专注，慢一点也没关系。',
-    eraLabel: '正传感 / 荒漠基地',
+    eraLabel: '前传感 / 双日星港',
     armorColor: Color(0xFFE7D6B5),
-    accentColor: Color(0xFFB56A35),
+    accentColor: Color(0xFFC4934D),
     visorColor: Color(0xFF26201A),
   ),
   SpacePersona(
     id: 'red-stripe-vanguard',
-    title: '红纹先锋',
+    title: '金纹先锋',
     subtitle: '适合开局困难的一天，用第一步破局。',
     eraLabel: '前传感 / 突击小队',
     armorColor: _armorWhite,
-    accentColor: Color(0xFFC14137),
+    accentColor: Color(0xFFD7A84D),
     visorColor: Color(0xFF22252B),
   ),
   SpacePersona(
     id: 'black-bridge-officer',
-    title: '黑桥指挥官',
+    title: '议会护卫官',
     subtitle: '适合做计划、排优先级、压住节奏。',
-    eraLabel: '正传感 / 冷色舰桥',
-    armorColor: Color(0xFF2E333D),
-    accentColor: _spaceAmber,
-    visorColor: Color(0xFF0B0C10),
+    eraLabel: '前传感 / 都城议会',
+    armorColor: Color(0xFFE9EEF5),
+    accentColor: Color(0xFF7C94B4),
+    visorColor: Color(0xFF1C2733),
   ),
 ];
 
@@ -598,7 +598,7 @@ class WinterApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Enoch 奇迹化',
+      title: 'Enoch日常打卡',
       debugShowCheckedModeBanner: false,
       theme: ThemeData(
         brightness: Brightness.light,
@@ -612,8 +612,10 @@ class WinterApp extends StatelessWidget {
           surfaceTintColor: Colors.transparent,
           elevation: 0,
           titleTextStyle: TextStyle(
-              color: _armorWhite, fontWeight: FontWeight.bold, fontSize: 18),
-          iconTheme: IconThemeData(color: _armorWhite),
+              color: Color(0xFF223044),
+              fontWeight: FontWeight.bold,
+              fontSize: 18),
+          iconTheme: IconThemeData(color: Color(0xFF223044)),
         ),
         cardTheme: CardThemeData(
           color: Colors.white,
@@ -727,10 +729,10 @@ class DashboardTab extends StatelessWidget {
         title: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const Text("Enoch 奇迹化",
+            const Text("Enoch日常打卡",
                 style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
             const Text("安排、专注、复盘，每天都能微调",
-                style: TextStyle(fontSize: 10, color: Colors.white60)),
+                style: TextStyle(fontSize: 10, color: Color(0xFF6A7482))),
           ],
         ),
         actions: [
@@ -752,9 +754,10 @@ class DashboardTab extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           const _SectorBanner(
-            title: "今日舰桥",
-            subtitle: "把任务排成航线，按优先级推进。",
-            icon: Icons.public,
+            title: "都城晨光",
+            subtitle: "把任务排成清晰航线，按优先级推进。",
+            icon: Icons.wb_sunny_outlined,
+            variant: SectorVariant.city,
           ),
           if (currentItem != null || nextItem != null)
             GestureDetector(
@@ -1220,12 +1223,12 @@ class _DailyPersonaCard extends StatelessWidget {
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
           colors: [
-            const Color(0xFF242833),
-            persona.accentColor.withValues(alpha: 0.55),
-            const Color(0xFF08090D),
+            const Color(0xFFF7E7BD),
+            const Color(0xFFEAF3FB),
+            persona.accentColor.withValues(alpha: 0.35),
           ],
         ),
-        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        border: Border.all(color: Colors.white),
       ),
       child: Stack(
         children: [
@@ -1263,7 +1266,7 @@ class _DailyPersonaCard extends StatelessWidget {
                 Text(
                   persona.title,
                   style: const TextStyle(
-                    color: _armorWhite,
+                    color: Color(0xFF243044),
                     fontSize: 24,
                     fontWeight: FontWeight.w800,
                   ),
@@ -1272,7 +1275,7 @@ class _DailyPersonaCard extends StatelessWidget {
                 Text(
                   persona.subtitle,
                   style: const TextStyle(
-                    color: Colors.white70,
+                    color: Color(0xFF566274),
                     fontSize: 13,
                     height: 1.35,
                   ),
@@ -1281,8 +1284,9 @@ class _DailyPersonaCard extends StatelessWidget {
                 FilledButton.icon(
                   style: FilledButton.styleFrom(
                     backgroundColor: isFavorited ? _spaceAmber : Colors.white12,
-                    foregroundColor:
-                        isFavorited ? const Color(0xFF181818) : _armorWhite,
+                    foregroundColor: isFavorited
+                        ? const Color(0xFF181818)
+                        : Color(0xFF243044),
                     padding:
                         const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
                   ),
@@ -1371,8 +1375,9 @@ class _ScheduleSpaceCard extends StatelessWidget {
                     children: [
                       Text(item.timeRange,
                           style: TextStyle(
-                              color:
-                                  isCurrent ? Colors.white70 : Colors.white54,
+                              color: isCurrent
+                                  ? Colors.white70
+                                  : const Color(0xFF7A8492),
                               fontWeight: FontWeight.bold,
                               fontSize: 13)),
                       const Spacer(),
@@ -1402,7 +1407,9 @@ class _ScheduleSpaceCard extends StatelessWidget {
                           fontSize: 17)),
                   Text(item.content,
                       style: TextStyle(
-                          color: isCurrent ? Colors.white70 : Colors.white60,
+                          color: isCurrent
+                              ? Colors.white70
+                              : const Color(0xFF6A7482),
                           fontSize: 13),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis),
@@ -1522,15 +1529,19 @@ class _PersonaPainter extends CustomPainter {
       oldDelegate.persona.id != persona.id;
 }
 
+enum SectorVariant { city, starMap, legion, terminal, hangar }
+
 class _SectorBanner extends StatelessWidget {
   final String title;
   final String subtitle;
   final IconData icon;
+  final SectorVariant variant;
 
   const _SectorBanner({
     required this.title,
     required this.subtitle,
     required this.icon,
+    required this.variant,
   });
 
   @override
@@ -1543,15 +1554,15 @@ class _SectorBanner extends StatelessWidget {
         gradient: const LinearGradient(
           begin: Alignment.topLeft,
           end: Alignment.bottomRight,
-          colors: [Color(0xFF2D3340), Color(0xFF161A22), Color(0xFF3B2226)],
+          colors: [Color(0xFFF6E6B9), Color(0xFFEAF2FA), Color(0xFFB9D2E8)],
         ),
-        border: Border.all(color: Colors.white10),
+        border: Border.all(color: Colors.white),
       ),
       child: Stack(
         children: [
           Positioned.fill(
             child: CustomPaint(
-              painter: _FleetBannerPainter(),
+              painter: _FleetBannerPainter(variant: variant),
             ),
           ),
           Padding(
@@ -1562,7 +1573,7 @@ class _SectorBanner extends StatelessWidget {
                   width: 52,
                   height: 52,
                   decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.1),
+                    color: Colors.white.withValues(alpha: 0.62),
                     borderRadius: BorderRadius.circular(12),
                     border:
                         Border.all(color: _spaceAmber.withValues(alpha: 0.5)),
@@ -1578,7 +1589,7 @@ class _SectorBanner extends StatelessWidget {
                       Text(
                         title,
                         style: const TextStyle(
-                          color: _armorWhite,
+                          color: Color(0xFF243044),
                           fontSize: 20,
                           fontWeight: FontWeight.w800,
                         ),
@@ -1587,7 +1598,7 @@ class _SectorBanner extends StatelessWidget {
                       Text(
                         subtitle,
                         style: const TextStyle(
-                          color: Colors.white70,
+                          color: Color(0xFF566274),
                           fontSize: 12,
                           height: 1.25,
                         ),
@@ -1605,57 +1616,154 @@ class _SectorBanner extends StatelessWidget {
 }
 
 class _FleetBannerPainter extends CustomPainter {
+  final SectorVariant variant;
+
+  _FleetBannerPainter({required this.variant});
+
   @override
   void paint(Canvas canvas, Size size) {
-    final star = Paint()..color = Colors.white.withValues(alpha: 0.38);
-    for (var i = 0; i < 26; i++) {
-      final x = (i * 37 % size.width.toInt()).toDouble();
-      final y = (i * 19 % size.height.toInt()).toDouble();
-      canvas.drawCircle(Offset(x, y), i % 6 == 0 ? 1.4 : 0.8, star);
+    final star = Paint()..color = Colors.white.withValues(alpha: 0.8);
+    for (var i = 0; i < 18; i++) {
+      final x = (i * 41 % size.width.toInt()).toDouble();
+      final y = (i * 17 % size.height.toInt()).toDouble();
+      canvas.drawCircle(Offset(x, y), i % 6 == 0 ? 1.5 : 0.9, star);
     }
 
-    final beam = Paint()
-      ..color = _spaceAmber.withValues(alpha: 0.35)
-      ..strokeWidth = 2;
-    canvas.drawLine(Offset(size.width * 0.58, size.height * 0.22),
-        Offset(size.width * 0.96, size.height * 0.1), beam);
-    canvas.drawLine(
-        Offset(size.width * 0.62, size.height * 0.76),
-        Offset(size.width * 0.98, size.height * 0.9),
-        beam..color = _spaceRed.withValues(alpha: 0.45));
-
-    final ship = Paint()..color = _armorWhite.withValues(alpha: 0.78);
-    final dark = Paint()
-      ..color = const Color(0xFF11131A).withValues(alpha: 0.9);
-    final startX = size.width * 0.72;
-    final startY = size.height * 0.48;
-    canvas.drawPath(
-      Path()
-        ..moveTo(startX, startY)
-        ..lineTo(startX + 64, startY - 18)
-        ..lineTo(startX + 52, startY)
-        ..lineTo(startX + 64, startY + 18)
-        ..close(),
-      ship,
-    );
-    canvas.drawRect(Rect.fromLTWH(startX + 22, startY - 4, 26, 8), dark);
-
-    final soldier = Paint()..color = _armorWhite.withValues(alpha: 0.32);
-    for (var i = 0; i < 4; i++) {
-      final dx = size.width * 0.61 + i * 16;
-      canvas.drawRRect(
-        RRect.fromRectAndRadius(
-          Rect.fromLTWH(dx, size.height * 0.68, 10, 18),
-          const Radius.circular(4),
-        ),
-        soldier,
-      );
-      canvas.drawCircle(Offset(dx + 5, size.height * 0.65), 5, soldier);
+    switch (variant) {
+      case SectorVariant.city:
+        _drawCity(canvas, size);
+        break;
+      case SectorVariant.starMap:
+        _drawStarMap(canvas, size);
+        break;
+      case SectorVariant.legion:
+        _drawLegion(canvas, size);
+        break;
+      case SectorVariant.terminal:
+        _drawTerminal(canvas, size);
+        break;
+      case SectorVariant.hangar:
+        _drawHangar(canvas, size);
+        break;
     }
   }
 
+  void _drawCity(Canvas canvas, Size size) {
+    final tower = Paint()..color = Colors.white.withValues(alpha: 0.55);
+    final line = Paint()
+      ..color = _spaceBlue.withValues(alpha: 0.55)
+      ..strokeWidth = 2;
+    for (var i = 0; i < 5; i++) {
+      final x = size.width * (0.6 + i * 0.07);
+      canvas.drawRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(x, size.height * (0.28 + i * 0.05), 18,
+              size.height * (0.55 - i * 0.04)),
+          const Radius.circular(9),
+        ),
+        tower,
+      );
+      canvas.drawLine(Offset(x + 9, size.height * 0.2),
+          Offset(x + 9, size.height * (0.28 + i * 0.05)), line);
+    }
+    _drawCruiser(
+        canvas, size, Offset(size.width * 0.78, size.height * 0.22), 0.72);
+  }
+
+  void _drawStarMap(Canvas canvas, Size size) {
+    final orbit = Paint()
+      ..color = _spaceBlue.withValues(alpha: 0.45)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.4;
+    final planet = Paint()..color = _spaceAmber.withValues(alpha: 0.55);
+    final center = Offset(size.width * 0.76, size.height * 0.48);
+    for (var i = 1; i <= 3; i++) {
+      canvas.drawCircle(center, i * 18, orbit);
+    }
+    canvas.drawCircle(center, 10, planet);
+    _drawCruiser(
+        canvas, size, Offset(size.width * 0.62, size.height * 0.28), 0.52);
+  }
+
+  void _drawLegion(Canvas canvas, Size size) {
+    final armor = Paint()..color = Colors.white.withValues(alpha: 0.68);
+    final visor = Paint()
+      ..color = const Color(0xFF263244).withValues(alpha: 0.8);
+    for (var i = 0; i < 6; i++) {
+      final dx = size.width * 0.56 + i * 22;
+      canvas.drawRRect(
+          RRect.fromRectAndRadius(Rect.fromLTWH(dx, size.height * 0.58, 14, 31),
+              const Radius.circular(5)),
+          armor);
+      canvas.drawRRect(
+          RRect.fromRectAndRadius(
+              Rect.fromLTWH(dx - 3, size.height * 0.45, 20, 22),
+              const Radius.circular(8)),
+          armor);
+      canvas.drawRect(Rect.fromLTWH(dx + 2, size.height * 0.53, 10, 3), visor);
+    }
+    _drawCruiser(
+        canvas, size, Offset(size.width * 0.8, size.height * 0.25), 0.5);
+  }
+
+  void _drawTerminal(Canvas canvas, Size size) {
+    final panel = Paint()..color = Colors.white.withValues(alpha: 0.62);
+    final blue = Paint()..color = _spaceBlue.withValues(alpha: 0.52);
+    final amber = Paint()..color = _spaceAmber.withValues(alpha: 0.6);
+    canvas.drawRRect(
+        RRect.fromRectAndRadius(
+            Rect.fromLTWH(size.width * 0.62, size.height * 0.32, 112, 50),
+            const Radius.circular(12)),
+        panel);
+    for (var i = 0; i < 4; i++) {
+      canvas.drawRect(
+          Rect.fromLTWH(size.width * 0.65 + i * 20, size.height * 0.45, 12, 12),
+          i.isEven ? blue : amber);
+    }
+    canvas.drawCircle(Offset(size.width * 0.84, size.height * 0.55), 17, blue);
+  }
+
+  void _drawHangar(Canvas canvas, Size size) {
+    final floor = Paint()..color = Colors.white.withValues(alpha: 0.35);
+    final line = Paint()
+      ..color = _spaceAmber.withValues(alpha: 0.6)
+      ..strokeWidth = 2;
+    canvas.drawPath(
+      Path()
+        ..moveTo(size.width * 0.52, size.height)
+        ..lineTo(size.width, size.height * 0.72)
+        ..lineTo(size.width, size.height)
+        ..close(),
+      floor,
+    );
+    canvas.drawLine(Offset(size.width * 0.58, size.height * 0.96),
+        Offset(size.width * 0.96, size.height * 0.76), line);
+    _drawCruiser(
+        canvas, size, Offset(size.width * 0.78, size.height * 0.4), 0.85);
+  }
+
+  void _drawCruiser(Canvas canvas, Size size, Offset origin, double scale) {
+    final ship = Paint()..color = Colors.white.withValues(alpha: 0.72);
+    final dark = Paint()
+      ..color = const Color(0xFF243044).withValues(alpha: 0.7);
+    canvas.drawPath(
+      Path()
+        ..moveTo(origin.dx, origin.dy)
+        ..lineTo(origin.dx + 84 * scale, origin.dy - 22 * scale)
+        ..lineTo(origin.dx + 66 * scale, origin.dy)
+        ..lineTo(origin.dx + 84 * scale, origin.dy + 22 * scale)
+        ..close(),
+      ship,
+    );
+    canvas.drawRect(
+        Rect.fromLTWH(origin.dx + 30 * scale, origin.dy - 4 * scale, 28 * scale,
+            8 * scale),
+        dark);
+  }
+
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _FleetBannerPainter oldDelegate) =>
+      oldDelegate.variant != variant;
 }
 
 class CalendarTab extends StatefulWidget {
@@ -1690,6 +1798,7 @@ class _CalendarTabState extends State<CalendarTab> {
             title: "星图月历",
             subtitle: "特殊安排像坐标一样标记在这个月。",
             icon: Icons.radar,
+            variant: SectorVariant.starMap,
           ),
           Card(
             child: Padding(
@@ -1897,9 +2006,10 @@ class HomeworkTab extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           const _SectorBanner(
-            title: "补给清单",
+            title: "白甲小队",
             subtitle: "把长期事项拆成一格一格的可完成任务。",
             icon: Icons.inventory_2_outlined,
+            variant: SectorVariant.legion,
           ),
           for (var i = 0; i < state.homeworks.length; i++) ...[
             Builder(builder: (ctx) {
@@ -2058,9 +2168,10 @@ class _TodoTabState extends State<TodoTab> {
         padding: const EdgeInsets.all(16),
         children: [
           const _SectorBanner(
-            title: "任务终端",
+            title: "机器人终端",
             subtitle: "先写下一件事，再把它完成。",
             icon: Icons.terminal,
+            variant: SectorVariant.terminal,
           ),
           Card(
             child: Padding(
@@ -2425,9 +2536,10 @@ class SettingsTab extends StatelessWidget {
         padding: const EdgeInsets.all(16),
         children: [
           const _SectorBanner(
-            title: "舰船控制台",
+            title: "星港控制台",
             subtitle: "管理数据、备份和恢复。",
             icon: Icons.settings_input_component_outlined,
+            variant: SectorVariant.hangar,
           ),
           _buildSectionHeader("数据控制"),
           Card(
@@ -2496,7 +2608,7 @@ class SettingsTab extends StatelessWidget {
                   })),
           const SizedBox(height: 40),
           const Center(
-              child: Text("Version 1.4.1 (Enoch 奇迹化)",
+              child: Text("Version 1.4.2 (Enoch日常打卡)",
                   style: TextStyle(color: Colors.grey))),
         ],
       ),
