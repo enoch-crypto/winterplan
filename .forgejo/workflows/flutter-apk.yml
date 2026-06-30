@@ -27,6 +27,8 @@ jobs:
           set -e
           if /usr/libexec/java_home -v 17 >/dev/null 2>&1; then
             export JAVA_HOME="$(/usr/libexec/java_home -v 17)"
+          elif [ -x /tmp/jdk17/Contents/Home/bin/java ]; then
+            export JAVA_HOME="/tmp/jdk17/Contents/Home"
           else
             rm -rf /tmp/jdk17
             mkdir -p /tmp/jdk17
@@ -35,7 +37,7 @@ jobs:
             else
               jdk_url="https://github.com/adoptium/temurin17-binaries/releases/download/jdk-17.0.15%2B6/OpenJDK17U-jdk_x64_mac_hotspot_17.0.15_6.tar.gz"
             fi
-            curl -L "$jdk_url" -o /tmp/jdk17.tar.gz
+            curl --fail --location --connect-timeout 20 --max-time 180 "$jdk_url" -o /tmp/jdk17.tar.gz
             tar -xzf /tmp/jdk17.tar.gz -C /tmp/jdk17 --strip-components=1
             export JAVA_HOME="/tmp/jdk17/Contents/Home"
           fi
